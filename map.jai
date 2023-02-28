@@ -35,7 +35,7 @@ map_draw :: () {
 
     for y: 0..map_height - 1 {
         for x: 0..map_width - 1 {
-            draw_sprite(map_tiles[i].spr, Vector2.{xx (x * CELL_WIDTH), xx (y * CELL_HEIGHT)}, pal[map_tiles[i].color]);
+            draw_sprite(map_tiles[i].spr, .{(x * CELL_WIDTH), (y * CELL_HEIGHT)}, pal[map_tiles[i].color]);
 
             if map_tiles[i].entity != null entity_draw(map_tiles[i].entity);
 

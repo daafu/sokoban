@@ -7,15 +7,15 @@ CELL_HEIGHT :: 16;
 camera_x : int = 0;
 camera_y : int = 0;
 
-draw_sprite :: (spr : SpriteType, draw_pos: Vector2, color: Vector4) {
-    pos : Vector2 = draw_pos;
+draw_sprite :: (spr : SpriteType, draw_pos: Vector2i, color: Vector4) {
+    pos := draw_pos;
     pos.x += camera_x;
     pos.y += camera_y;
 
     si := sprite_get_index(spr);
 
     uv0 := Vector2.{(si.x * cast(float) CELL_WIDTH) / arts.width, (arts.height - (si.y * CELL_HEIGHT)) / cast (float) arts.height};
-    Simp.immediate_quad(pos, Vector2.{pos.x + CELL_WIDTH, pos.y}, Vector2.{pos.x + CELL_WIDTH, pos.y + CELL_HEIGHT}, Vector2.{pos.x, pos.y + CELL_HEIGHT}, color,
+    Simp.immediate_quad(.{xx pos.x, xx pos.y}, Vector2.{xx (pos.x + CELL_WIDTH), xx pos.y}, Vector2.{xx (pos.x + CELL_WIDTH), xx (pos.y + CELL_HEIGHT)}, Vector2.{xx pos.x, xx (pos.y + CELL_HEIGHT)}, color,
                 uv0,
                 Vector2.{uv0.x + (cast(float) CELL_WIDTH / arts.width), uv0.y},
                 Vector2.{uv0.x + (cast(float) CELL_WIDTH / arts.width), uv0.y - (cast(float) CELL_HEIGHT / arts.height)},
@@ -23,22 +23,22 @@ draw_sprite :: (spr : SpriteType, draw_pos: Vector2, color: Vector4) {
                 );
 }
 
-draw_copy :: (src_x: int, src_y: int, src_width: int, src_height: int, draw_pos: Vector2, color: Vector4) {
-    pos : Vector2 = draw_pos;
+draw_copy :: (src: Rect, draw_pos: Vector2i, color: Vector4) {
+    pos := draw_pos;
     pos.x += camera_x;
     pos.y += camera_y;
 
-    uv0 := Vector2.{cast(float) src_x / arts.width, (cast (float) arts.height - src_y) / cast (float) arts.height};
-    Simp.immediate_quad(pos, Vector2.{pos.x + src_width, pos.y}, Vector2.{pos.x + src_width, pos.y + src_height}, Vector2.{pos.x, pos.y + src_height}, color,
+    uv0 := Vector2.{cast(float) src.x / arts.width, (cast (float) arts.height - src.y) / cast (float) arts.height};
+    Simp.immediate_quad(.{xx pos.x, xx pos.y}, Vector2.{xx (pos.x + src.width), xx pos.y}, Vector2.{xx (pos.x + src.width), xx (pos.y + src.height)}, Vector2.{xx pos.x, xx (pos.y + src.height)}, color,
                 uv0,
-                Vector2.{uv0.x + (cast(float) src_width / arts.width), uv0.y},
-                Vector2.{uv0.x + (cast(float) src_width / arts.width), uv0.y - (cast(float) src_height / arts.height)},
-                Vector2.{uv0.x, uv0.y - (cast(float) src_height / arts.height)}
+                Vector2.{uv0.x + (cast(float) src.width / arts.width), uv0.y},
+                Vector2.{uv0.x + (cast(float) src.width / arts.width), uv0.y - (cast(float) src.height / arts.height)},
+                Vector2.{uv0.x, uv0.y - (cast(float) src.height / arts.height)}
                 );
 }
 
-draw_text_internal :: (font : *SpriteFont, draw_pos : Vector2, color : Vector4, text: string, measure_only: bool) -> int, int {
-    pos : Vector2 = draw_pos;
+draw_text_internal :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string, measure_only: bool) -> int, int {
+    pos := draw_pos;
     pos.x += camera_x;
     pos.y += camera_y;
 
@@ -68,7 +68,7 @@ draw_text_internal :: (font : *SpriteFont, draw_pos : Vector2, color : Vector4, 
         glyph := font.glyphs[glyph_i];
 
         if !measure_only {
-            draw_copy(glyph.x, glyph.y, glyph.width, glyph.height, Vector2.{cast(float)pos_x, cast(float)pos_y}, color);
+            draw_copy(.{glyph.x, glyph.y, glyph.width, glyph.height}, .{pos_x, pos_y}, color);
         }
 
         pos_x += font.glyph_width + font.spacing_x;
@@ -78,11 +78,11 @@ draw_text_internal :: (font : *SpriteFont, draw_pos : Vector2, color : Vector4, 
     return total_width, total_height;
 }
 
-draw_text :: (font : *SpriteFont, draw_pos : Vector2, color : Vector4, text: string) {
+draw_text :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string) {
     draw_text_internal(font, draw_pos, color, text, false);
 }
 
-measure_text :: (font : *SpriteFont, draw_pos : Vector2, color : Vector4, text: string) -> int, int {
+measure_text :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string) -> int, int {
     width, height := draw_text_internal(font, draw_pos, color, text, true);
 
     return width, height;

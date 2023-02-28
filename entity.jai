@@ -23,7 +23,7 @@ Entity :: struct {
 }
 
 entity_draw :: (e: Entity) {
-    draw_sprite(e.spr, Vector2.{xx (e.vx * CELL_WIDTH), xx (e.vy * CELL_HEIGHT)}, pal[e.color]);
+    draw_sprite(e.spr, .{xx (e.vx * CELL_WIDTH + 0.5), xx (e.vy * CELL_HEIGHT + 0.5)}, pal[e.color]);
 }
 
 entity_update :: (e: *Entity) {
