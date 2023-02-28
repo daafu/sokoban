@@ -23,6 +23,8 @@ player : Player;
 
 current_level := 0;
 
+reveal : float = 0.0;
+
 map_init :: () {
     
 }
@@ -33,12 +35,22 @@ map_draw :: () {
     i : int = 0;
 
     tx, ty : int = 0;
+    yoffset := 0;
 
     for y: 0..map_height - 1 {
-        for x: 0..map_width - 1 {
-            draw_sprite(map_tiles[i].spr, .{(x * CELL_WIDTH), (y * CELL_HEIGHT)}, pal[map_tiles[i].color]);
+        for x: 0..map_width - 1 {            
+            if reveal < 1.0 {
+                t := reveal;
+                t += x / 50.0;
+                t += y / 50.0;
+                
+                if t > 1 then t = 1;
+                yoffset = xx -((1.0 - t) * (game_height * 2));
+            }
 
-            if map_tiles[i].entity != null entity_draw(map_tiles[i].entity);
+            draw_sprite(map_tiles[i].spr, .{(x * CELL_WIDTH), (y * CELL_HEIGHT) + yoffset}, pal[map_tiles[i].color]);
+
+            if map_tiles[i].entity != null entity_draw(map_tiles[i].entity, yoffset);
 
             i += 1;
         }
@@ -184,6 +196,15 @@ map_update :: () {
             case .PLAYER; player_update(xx it);
             case; entity_update(it);
         }
+    }
+
+    if !map_all_creates_slotted() {
+        reveal += 0.01;
+        if reveal > 1 then reveal = 1;
+    }
+    else {
+        reveal -= 0.01;
+        if reveal < 0 then reveal = 0;
     }
 }
 

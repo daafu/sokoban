@@ -22,8 +22,8 @@ Entity :: struct {
     flags : u8 = 0;
 }
 
-entity_draw :: (e: Entity) {
-    draw_sprite(e.spr, .{xx (e.vx * CELL_WIDTH + 0.5), xx (e.vy * CELL_HEIGHT + 0.5)}, pal[e.color]);
+entity_draw :: (e: Entity, yoffset: int) {
+    draw_sprite(e.spr, .{xx (e.vx * CELL_WIDTH + 0.5), xx (e.vy * CELL_HEIGHT + 0.5) + yoffset}, pal[e.color]);
 }
 
 entity_update :: (e: *Entity) {
