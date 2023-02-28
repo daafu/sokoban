@@ -69,10 +69,9 @@ render :: () {
 
     map_draw();
 
-    text_width, text_height := measure_text(*font_expire, .{32, 32}, pal[7], "TEST THIS MAN 123!");
-
-    text := tprint("TEST THIS MAN %, %", text_width, text_height);
-    draw_text(*font_expire, .{32, 32}, pal[7], text);
+    if map_all_creates_slotted() {
+        draw_text(*font_expire, .{2, 2}, pal[7], "WIN");
+    }
     /*
     Simp.immediate_quad(Vector2.{0, 0}, Vector2.{16, 0}, Vector2.{16, 16}, Vector2.{0, 16}, pal[1],
                         Vector2.{0, 1}, Vector2.{16.0 / 512, 1}, Vector2.{16.0 / 512.0, (512 - 16) / 512.0}, Vector2.{0, (512 - 16) / 512.0});

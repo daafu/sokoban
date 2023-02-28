@@ -17,6 +17,7 @@ map_height : int = 0;
 
 map_tiles : [128 * 128] Tile;
 entities : [..] *Entity;
+crate_slots : [..] Vector2i;
 
 player : Player;
 
@@ -50,6 +51,7 @@ map_load :: (level: int) {
     current_level = level;
 
     map_remove_all_entities();
+    array_reset(*crate_slots);
 
     level_str := levels[level];
 
@@ -117,6 +119,7 @@ map_load :: (level: int) {
                     spr = .CRATE_SLOT;
                     color = 2;
                     flags = 0;
+                    array_add(*crate_slots, .{x, y});
                 case; spr = .NONE;
             }
 
@@ -245,4 +248,14 @@ map_remove_all_entities :: () {
 
 map_reset :: () {
     map_load(current_level);
+}
+
+map_all_creates_slotted :: () -> bool {
+    for slot: crate_slots {
+        if map_tiles[slot.x + slot.y * map_width].entity == null || map_tiles[slot.x + slot.y * map_width].entity.type != .CRATE {
+            return false;
+        }
+    }
+
+    return true;
 }
