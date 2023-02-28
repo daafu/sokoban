@@ -19,11 +19,9 @@
 #load "crate.jai";
 #load "input.jai";
 #load "assets.jai";
+#load "draw.jai";
 
 Simp :: #import "Simp";
-
-CELL_WIDTH :: 16;
-CELL_HEIGHT :: 16;
 
 window_width : s32 = 1280; 
 window_height : s32 = 720;
@@ -31,9 +29,6 @@ game_width : s32;
 game_height : s32;
 
 window : Window_Type;
-
-camera_x : int = 0;
-camera_y : int = 0;
 
 sound_player : *Sound_Player;
 
@@ -64,32 +59,6 @@ init :: () {
     print("Initialized");
 }
 
-draw_sprite :: (spr : SpriteType, draw_pos: Vector2, color: Vector4) {
-    pos : Vector2 = draw_pos;
-    pos.x += camera_x;
-    pos.y += camera_y;
-
-    si := sprite_get_index(spr);
-
-    uv0 := Vector2.{(si.x * cast(float) CELL_WIDTH) / arts.width, (arts.height - (si.y * CELL_HEIGHT)) / cast (float) arts.height};
-    Simp.immediate_quad(pos, Vector2.{pos.x + CELL_WIDTH, pos.y}, Vector2.{pos.x + CELL_WIDTH, pos.y + CELL_HEIGHT}, Vector2.{pos.x, pos.y + CELL_HEIGHT}, color,
-                uv0,
-                Vector2.{uv0.x + (cast(float) CELL_WIDTH / arts.width), uv0.y},
-                Vector2.{uv0.x + (cast(float) CELL_WIDTH / arts.width), uv0.y - (cast(float) CELL_HEIGHT / arts.height)},
-                Vector2.{uv0.x, uv0.y - (cast(float) CELL_HEIGHT / arts.height)}
-                );
-}
-
-camera_set :: (x: int, y: int) {
-    camera_x = x;
-    camera_y = y;
-}
-
-camera_reset :: () {
-    camera_x = 0;
-    camera_y = 0;
-}
-
 render :: () {
     Simp.set_render_target(*pixel_surf);
     Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
@@ -100,6 +69,10 @@ render :: () {
 
     map_draw();
 
+    text_width, text_height := measure_text(*font_expire, Vector2.{32, 32}, pal[7], "TEST THIS MAN 123!");
+
+    text := tprint("TEST THIS MAN %, %", text_width, text_height);
+    draw_text(*font_expire, Vector2.{32, 32}, pal[7], text);
     /*
     Simp.immediate_quad(Vector2.{0, 0}, Vector2.{16, 0}, Vector2.{16, 16}, Vector2.{0, 16}, pal[1],
                         Vector2.{0, 1}, Vector2.{16.0 / 512, 1}, Vector2.{16.0 / 512.0, (512 - 16) / 512.0}, Vector2.{0, (512 - 16) / 512.0});
