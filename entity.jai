@@ -33,8 +33,8 @@ entity_update :: (e: *Entity) {
     dx : float = target_x - e.vx;
     dy : float = target_y - e.vy;
 
-    e.vx += dx * 0.25;
-    e.vy += dy * 0.25;
+    e.vx += dx * 30 * time_delta;
+    e.vy += dy * 30 * time_delta;
 }
 
 entity_set_snap_pos :: (e: *Entity, x: int, y: int) {

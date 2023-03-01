@@ -39,6 +39,9 @@ last_time : float64;
 
 should_quit_game : bool = false;
 
+time_delta : float;
+time_prev : float64;
+
 init :: () {
     sound_player = New(Sound_Player);
     sound_player.update_history = true;
@@ -99,6 +102,8 @@ main :: () {
 
     init();
 
+    time_prev = get_time();
+
     while !should_quit_game {
         reset_temporary_storage();
         
@@ -130,6 +135,10 @@ main :: () {
                 input_handle_keyboard_event(event);
             }
         }        
+
+        time_current := get_time();
+        time_delta = xx (time_current - time_prev);
+        time_prev = time_current; 
 
         map_update();
 

@@ -199,11 +199,11 @@ map_update :: () {
     }
 
     if !map_all_creates_slotted() {
-        reveal += 0.01;
+        reveal += 1 * time_delta;
         if reveal > 1 then reveal = 1;
     }
     else {
-        reveal -= 0.01;
+        reveal -= 1 * time_delta;
         if reveal < 0 then reveal = 0;
     }
 }
