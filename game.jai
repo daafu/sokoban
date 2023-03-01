@@ -11,6 +11,7 @@
 #import "Thread";
 #import "Input";
 #import "System";
+#import "Gamepad";
 
 #load "map.jai";
 #load "player.jai";
@@ -75,6 +76,10 @@ render :: () {
     if map_all_creates_slotted() {
         draw_text(*font_expire, .{2, 2}, pal[7], "WIN");
     }
+
+
+    gamepad_str := tprint("GAMEPAD CON: %  LEFT_STICK: %, %", gamepad.connected, gamepad.left_stick.x, gamepad.left_stick.y);
+    draw_text(*font_expire, .{2, 2}, pal[7], gamepad_str);
     /*
     Simp.immediate_quad(Vector2.{0, 0}, Vector2.{16, 0}, Vector2.{16, 16}, Vector2.{0, 16}, pal[1],
                         Vector2.{0, 1}, Vector2.{16.0 / 512, 1}, Vector2.{16.0 / 512.0, (512 - 16) / 512.0}, Vector2.{0, (512 - 16) / 512.0});
@@ -101,6 +106,7 @@ main :: () {
     Simp.set_render_target(window);
 
     init();
+    init_gamepad();
 
     time_prev = get_time();
 
@@ -108,6 +114,7 @@ main :: () {
         reset_temporary_storage();
         
         update_window_events();
+        update_gamepad();
 
         // @Incomplete: Handle resizes in the actual scene drawing, which we currently don't.
         for get_window_resizes() {
@@ -123,18 +130,28 @@ main :: () {
         }
         
         for event : events_this_frame {
-            if event.type == .QUIT {
-                should_quit_game = true;
-                break;
-            }
+            if event.type == {
+                case .QUIT; {
+                    should_quit_game = true;
+                    break;
+                }
 
-            if event.key_code == .ESCAPE 
-                if event.key_pressed should_quit_game = true;
+                case .KEYBOARD; {
+                    if event.key_code == .ESCAPE {
+                        if event.key_pressed {
+                            should_quit_game = true;
+                        }
+                    }
+                    else if event.key_code == .F1 {
+                        init_gamepad();
+                    }
 
-            if event.type == .KEYBOARD {
-                input_handle_keyboard_event(event);
+                    input_handle_keyboard_event(event);
+                }   
             }
         }        
+
+        input_handle_gamepad();
 
         time_current := get_time();
         time_delta = xx (time_current - time_prev);

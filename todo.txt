@@ -1,1 +1,1 @@
-make sure when entity moves it moves its map tile.entity reference too
+DONE make sure when entity moves it moves its map tile.entity reference too

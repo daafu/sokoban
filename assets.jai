@@ -107,5 +107,5 @@ assets_init :: () {
     set_sprite(.CRATE, 2, 0);
     set_sprite(.CRATE_SLOT, 3, 0);
 
-    set_font(*font_expire, #char "!", #char "`", .{0, 494}, 32, 9, 9, -1, 0, 6);
+    set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
 }

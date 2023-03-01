@@ -42,6 +42,12 @@ input_handle_keyboard_event :: (ev: Event) {
 
 }
 
+input_handle_gamepad :: () {
+    if gamepad.left_stick.x < 0.2 {
+        //button_pressed[cast (int) Button.LEFT] = true;
+    }
+}
+
 input_frame_end :: () {
     memcpy(*button_was_pressed, *button_pressed, button_was_pressed.count);
     memset(*button_pressed, 0, button_pressed.count);
