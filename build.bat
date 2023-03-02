@@ -1,0 +1,1 @@
+jai src/game.jai -output_path ..
