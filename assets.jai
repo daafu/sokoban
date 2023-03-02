@@ -51,6 +51,8 @@ SpriteFont :: struct {
 sprites : [64] SpriteIndex;
 font_expire : SpriteFont;
 
+arts : Simp.Texture;
+
 sprite_get_index :: (spr :SpriteType) -> SpriteIndex {
     si : SpriteIndex = sprites[cast (int) spr];
     return si;

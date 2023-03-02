@@ -1,5 +1,7 @@
 #import "Basic"; //()(MEMORY_DEBUGGER=true);
 
+#scope_export
+
 TileFlag :: enum u8 {
     NONE :: 0;
     BLOCKING :: 1;
@@ -23,8 +25,14 @@ player : Player;
 
 current_level := 0;
 
+
+
+#scope_file
 reveal : float = 0.0;
 
+
+
+#scope_export
 map_init :: () {
     
 }

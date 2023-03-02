@@ -1,6 +1,8 @@
 #import "Basic"; //()(MEMORY_DEBUGGER=true);
 #import "String";
 
+#scope_export
+
 CELL_WIDTH :: 16;
 CELL_HEIGHT :: 16;
 
@@ -37,6 +39,29 @@ draw_copy :: (src: Rect, draw_pos: Vector2i, color: Vector4) {
                 );
 }
 
+draw_text :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string) {
+    draw_text_internal(font, draw_pos, color, text, false);
+}
+
+measure_text :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string) -> int, int {
+    width, height := draw_text_internal(font, draw_pos, color, text, true);
+
+    return width, height;
+}
+
+camera_set :: (x: int, y: int) {
+    camera_x = x;
+    camera_y = y;
+}
+
+camera_reset :: () {
+    camera_x = 0;
+    camera_y = 0;
+}
+
+
+
+#scope_file
 draw_text_internal :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string, measure_only: bool) -> int, int {
     pos := draw_pos;
     pos.x += camera_x;
@@ -76,24 +101,4 @@ draw_text_internal :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4,
     }
 
     return total_width, total_height;
-}
-
-draw_text :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string) {
-    draw_text_internal(font, draw_pos, color, text, false);
-}
-
-measure_text :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string) -> int, int {
-    width, height := draw_text_internal(font, draw_pos, color, text, true);
-
-    return width, height;
-}
-
-camera_set :: (x: int, y: int) {
-    camera_x = x;
-    camera_y = y;
-}
-
-camera_reset :: () {
-    camera_x = 0;
-    camera_y = 0;
 }

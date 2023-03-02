@@ -24,77 +24,31 @@
 
 Simp :: #import "Simp";
 
-window_width : s32 = 1280; 
-window_height : s32 = 720;
+#scope_export
+
 game_width : s32;
 game_height : s32;
 
-window : Window_Type;
-
 sound_player : *Sound_Player;
 
+time_delta : float;
+time_prev : float64;
+
+#scope_file
+
+window_width : s32 = 1280; 
+window_height : s32 = 720;
+
+window : Window_Type;
+
 pixel_surf : Simp.Texture;
-arts : Simp.Texture;
 
 last_time : float64;
 
 should_quit_game : bool = false;
 
-time_delta : float;
-time_prev : float64;
 
-init :: () {
-    sound_player = New(Sound_Player);
-    sound_player.update_history = true;
-
-    game_width = window_width / 4;
-    game_height = window_height / 4;
-    
-    pixel_surf = Simp.texture_create_render_target(game_width, game_height, .RGBA8, .Render_Target);
-
-    if (!Simp.texture_load_from_file(*arts, "res/arts.png")) {
-        print("Failed to load texture");
-    }
-
-    assets_init();
-    map_init();
-    map_load(0);
-
-    print("Initialized");
-}
-
-render :: () {
-    Simp.set_render_target(*pixel_surf);
-    Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
-
-    Simp.set_shader_for_images(*arts);
-
-    Simp.immediate_begin();
-
-    map_draw();
-
-    if map_all_creates_slotted() {
-        draw_text(*font_expire, .{2, 2}, pal[7], "WIN");
-    }
-
-
-    gamepad_str := tprint("GAMEPAD CON: %  LEFT_STICK: %, %", gamepad.connected, gamepad.left_stick.x, gamepad.left_stick.y);
-    draw_text(*font_expire, .{2, 2}, pal[7], gamepad_str);
-    /*
-    Simp.immediate_quad(Vector2.{0, 0}, Vector2.{16, 0}, Vector2.{16, 16}, Vector2.{0, 16}, pal[1],
-                        Vector2.{0, 1}, Vector2.{16.0 / 512, 1}, Vector2.{16.0 / 512.0, (512 - 16) / 512.0}, Vector2.{0, (512 - 16) / 512.0});
-      */                  
-    //Simp.immediate_quad(Vector2.{0, 0}, Vector2.{xx pixel_surf.width, 0}, Vector2.{xx pixel_surf.width, xx pixel_surf.height}, Vector2.{0, xx pixel_surf.height});
-    Simp.immediate_flush();
-
-    Simp.set_render_target(window);
-
-    Simp.set_shader_for_images(*pixel_surf);
-
-    Simp.immediate_begin();
-    Simp.immediate_quad(Vector2.{0, xx window_height}, Vector2.{xx window_width, xx window_height}, Vector2.{xx window_width, 0}, Vector2.{0, 0}, .{1, 1, 1, 1});
-    Simp.immediate_flush();
-}
+#scope_export
 
 main :: () {
     last_time = get_time();
@@ -165,4 +119,62 @@ main :: () {
 
         Simp.swap_buffers(window);
     }
+}
+
+
+
+#scope_file
+
+init :: () {
+    sound_player = New(Sound_Player);
+    sound_player.update_history = true;
+
+    game_width = window_width / 4;
+    game_height = window_height / 4;
+    
+    pixel_surf = Simp.texture_create_render_target(game_width, game_height, .RGBA8, .Render_Target);
+
+    if (!Simp.texture_load_from_file(*arts, "res/arts.png")) {
+        print("Failed to load texture");
+    }
+
+    assets_init();
+    map_init();
+    map_load(0);
+
+    print("Initialized");
+}
+
+render :: () {
+    Simp.set_render_target(*pixel_surf);
+    Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
+
+    Simp.set_shader_for_images(*arts);
+
+    Simp.immediate_begin();
+
+    map_draw();
+
+    if map_all_creates_slotted() {
+        draw_text(*font_expire, .{2, 2}, pal[7], "WIN");
+    }
+
+
+    //gamepad_str := tprint("GAMEPAD CON: %  LEFT_STICK: %, %", gamepad.connected, gamepad.left_stick.x, gamepad.left_stick.y);
+    //draw_text(*font_expire, .{2, 2}, pal[7], gamepad_str);
+
+    /*
+    Simp.immediate_quad(Vector2.{0, 0}, Vector2.{16, 0}, Vector2.{16, 16}, Vector2.{0, 16}, pal[1],
+                        Vector2.{0, 1}, Vector2.{16.0 / 512, 1}, Vector2.{16.0 / 512.0, (512 - 16) / 512.0}, Vector2.{0, (512 - 16) / 512.0});
+      */                  
+    //Simp.immediate_quad(Vector2.{0, 0}, Vector2.{xx pixel_surf.width, 0}, Vector2.{xx pixel_surf.width, xx pixel_surf.height}, Vector2.{0, xx pixel_surf.height});
+    Simp.immediate_flush();
+
+    Simp.set_render_target(window);
+
+    Simp.set_shader_for_images(*pixel_surf);
+
+    Simp.immediate_begin();
+    Simp.immediate_quad(Vector2.{0, xx window_height}, Vector2.{xx window_width, xx window_height}, Vector2.{xx window_width, 0}, Vector2.{0, 0}, .{1, 1, 1, 1});
+    Simp.immediate_flush();
 }
