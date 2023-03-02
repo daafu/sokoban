@@ -1,7 +1,7 @@
 #import "Basic"; //()(MEMORY_DEBUGGER=true);
 #import "String";
 
-#scope_export
+#scope_module
 
 CELL_WIDTH :: 16;
 CELL_HEIGHT :: 16;

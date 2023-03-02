@@ -24,7 +24,7 @@
 
 Simp :: #import "Simp";
 
-#scope_export
+#scope_module
 
 game_width : s32;
 game_height : s32;
@@ -48,7 +48,7 @@ last_time : float64;
 should_quit_game : bool = false;
 
 
-#scope_export
+#scope_module
 
 main :: () {
     last_time = get_time();

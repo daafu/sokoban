@@ -1,6 +1,6 @@
 #import "Basic"; //()(MEMORY_DEBUGGER=true);
 
-#scope_export
+#scope_module
 
 TileFlag :: enum u8 {
     NONE :: 0;
@@ -32,7 +32,7 @@ reveal : float = 0.0;
 
 
 
-#scope_export
+#scope_module
 map_init :: () {
     
 }
