@@ -3,6 +3,7 @@
 EntityFlags :: enum u8 {
     PUSHABLE :: 1;
     PUSHER :: 2;
+    BLOCKING :: 4;
 }
 
 EntityType :: enum u8 {

@@ -11,6 +11,10 @@ Player :: struct {
 player_update :: (p : *Player) {
     entity_update(p);
 
+    if trans_next_level {
+        return;
+    }
+
     dx := 0;
     dy := 0;
 

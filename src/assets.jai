@@ -19,6 +19,8 @@ SpriteType :: enum u8 {
     PLAYER;
     CRATE;
     CRATE_SLOT;
+    DOOR_CLOSED;
+    DOOR_OPEN;
 }
 
 SpriteIndex :: struct {
@@ -108,6 +110,8 @@ assets_init :: () {
     set_sprite(.PLAYER, 1, 0);
     set_sprite(.CRATE, 2, 0);
     set_sprite(.CRATE_SLOT, 3, 0);
+    set_sprite(.DOOR_CLOSED, 0, 2);
+    set_sprite(.DOOR_OPEN, 0, 3);
 
     set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
 }

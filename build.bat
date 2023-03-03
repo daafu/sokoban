@@ -1,1 +1,1 @@
-jai src/game.jai -output_path ..
+jai src/build.jai -exe sokoban -output_path ..

@@ -25,10 +25,15 @@ player : Player;
 
 current_level := 0;
 
+door_pos : Vector2i = Vector2i.{-1, -1};
 
+trans_next_level := false;
 
 #scope_file
 reveal : float = 0.0;
+
+trans_next_level_timeout := TRANS_NEXT_LEVEL_TIME;
+TRANS_NEXT_LEVEL_TIME :: 0.25;
 
 
 
@@ -58,9 +63,16 @@ map_draw :: () {
 
             draw_sprite(map_tiles[i].spr, .{(x * CELL_WIDTH), (y * CELL_HEIGHT) + yoffset}, pal[map_tiles[i].color]);
 
-            if map_tiles[i].entity != null entity_draw(map_tiles[i].entity, yoffset);
-
             i += 1;
+        }
+    }
+
+    t := reveal;
+    yoffset = xx ((1 - t) * -(game_height * 2));
+
+    for entities {
+        if it.type == {
+            case; entity_draw(it, yoffset);
         }
     }
 
@@ -68,6 +80,9 @@ map_draw :: () {
 }
 
 map_load :: (level: int) {
+    trans_next_level := false;
+    trans_next_level_timeout := TRANS_NEXT_LEVEL_TIME;
+
     current_level = level;
 
     map_remove_all_entities();
@@ -110,15 +125,25 @@ map_load :: (level: int) {
         else {
             using map_tiles[x + y * map_width];
             if level_str[it] == {
-                case #char "#";
+                case #char "D"; // Door
+                    spr = .DOOR_CLOSED;
+                    flags = xx TileFlag.BLOCKING;
+                    color = 5;
+
+                    door_pos = Vector2i.{x, y};
+                case #char "#"; // Wall
                     spr = .WALL;
                     flags = xx TileFlag.BLOCKING;
-                    color = 4;
-                case #char " ";
+                    color = 4;                    
+                case #char " "; // Ground
                     spr = .GROUND;
                     flags = 0;
                     color = 1;
-                case #char "P";
+                case #char "%"; // Invisible wall
+                    spr = .GROUND;
+                    flags = xx TileFlag.BLOCKING;
+                    color = 1;
+                case #char "@"; // Player
                     spr = .GROUND;
                     color = 1;
                     flags = 0;
@@ -127,7 +152,7 @@ map_load :: (level: int) {
                     player.y = y;
 
                     map_add_entity(*player);
-                case #char "c";
+                case #char "c"; // Create
                     spr = .GROUND;
                     color = 1;
                     flags = 0;
@@ -135,7 +160,7 @@ map_load :: (level: int) {
                     crate := New(Crate);
                     entity_set_snap_pos(crate, x, y);
                     map_add_entity(crate);
-                case #char "o";
+                case #char "o"; // Create slot
                     spr = .CRATE_SLOT;
                     color = 2;
                     flags = 0;
@@ -207,12 +232,44 @@ map_update :: () {
     }
 
     if !map_all_creates_slotted() {
+        trans_next_level = false;
+
+        if door_pos.x != -1 {
+            i := door_pos.x + door_pos.y * map_width;
+            map_tiles[i].spr = .DOOR_CLOSED;
+            map_tiles[i].flags = xx TileFlag.BLOCKING;
+        }
+
         reveal += 1 * time_delta;
         if reveal > 1 then reveal = 1;
     }
     else {
-        reveal -= 1 * time_delta;
-        if reveal < 0 then reveal = 0;
+        if door_pos.x != -1 {
+            i := door_pos.x + door_pos.y * map_width;
+            map_tiles[i].spr = .DOOR_OPEN;
+            map_tiles[i].flags = 0;
+        }
+
+        if player.x == door_pos.x && player.y == door_pos.y {
+            trans_next_level = true;
+
+            trans_next_level_timeout -= time_delta;
+
+            if trans_next_level_timeout <= 0 {
+                reveal -= 1 * time_delta;
+                if reveal < 0 {
+                    reveal = 0;
+                    current_level += 1;
+                    if current_level >= levels.count then current_level = 0;
+
+                    map_load(current_level);
+                }
+            }
+        }
+        else {
+            trans_next_level = false;
+            trans_next_level_timeout = TRANS_NEXT_LEVEL_TIME;
+        }
     }
 }
 
