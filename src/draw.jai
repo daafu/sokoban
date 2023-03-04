@@ -6,8 +6,8 @@
 CELL_WIDTH :: 16;
 CELL_HEIGHT :: 16;
 
-camera_x : int = 0;
-camera_y : int = 0;
+camera_x : s32 = 0;
+camera_y : s32 = 0;
 
 draw_sprite :: (spr : SpriteType, draw_pos: Vector2i, color: Vector4) {
     pos := draw_pos;
@@ -50,8 +50,8 @@ measure_text :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text:
 }
 
 camera_set :: (x: int, y: int) {
-    camera_x = x;
-    camera_y = y;
+    camera_x = xx x;
+    camera_y = xx y;
 }
 
 camera_reset :: () {
@@ -93,7 +93,7 @@ draw_text_internal :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4,
         glyph := font.glyphs[glyph_i];
 
         if !measure_only {
-            draw_copy(.{glyph.x, glyph.y, glyph.width, glyph.height}, .{pos_x, pos_y}, color);
+            draw_copy(.{glyph.x, glyph.y, glyph.width, glyph.height}, .{xx pos_x, xx pos_y}, color);
         }
 
         pos_x += font.glyph_width + font.spacing_x;

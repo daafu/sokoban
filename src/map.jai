@@ -35,11 +35,13 @@ reveal : float = 0.0;
 trans_next_level_timeout := TRANS_NEXT_LEVEL_TIME;
 TRANS_NEXT_LEVEL_TIME :: 0.25;
 
-
+rand_vals : [16384] float;
 
 #scope_module
 map_init :: () {
-    
+    for v, i : rand_vals {
+        rand_vals[i] = random_get_zero_to_one();
+    }
 }
 
 map_draw :: () {
@@ -53,22 +55,20 @@ map_draw :: () {
     for y: 0..map_height - 1 {
         for x: 0..map_width - 1 {            
             if reveal < 1.0 {
-                t := reveal;
-                t += x / 50.0;
-                t += y / 50.0;
-                
+                t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal + (x / 50.0) + (y / 50) + (rand_vals[i] * 0.025));
+
                 if t > 1 then t = 1;
-                yoffset = xx -((1.0 - t) * (game_height * 2));
+                yoffset = xx -((1.0 - t) * (game_height * 1));
             }
 
-            draw_sprite(map_tiles[i].spr, .{(x * CELL_WIDTH), (y * CELL_HEIGHT) + yoffset}, pal[map_tiles[i].color]);
+            draw_sprite(map_tiles[i].spr, .{xx (x * CELL_WIDTH), xx ((y * CELL_HEIGHT) + yoffset)}, pal[map_tiles[i].color]);
 
             i += 1;
         }
     }
 
-    t := reveal;
-    yoffset = xx ((1 - t) * -(game_height * 2));
+    t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal);
+    yoffset = xx ((1 - t) * -(game_height * 1));
 
     for entities {
         if it.type == {
@@ -98,8 +98,8 @@ map_load :: (level: int) {
     map_width = 0;
     map_height = 0;
 
-    x := 0;
-    y := 0;
+    x : s32 = 0;
+    y : s32 = 0;
 
     // First pass just measure dimensions
     for 0..level_str.count - 1 {

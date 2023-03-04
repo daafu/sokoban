@@ -7,3 +7,4 @@
 #load "input.jai";
 #load "assets.jai";
 #load "draw.jai";
+#load "ease.jai";

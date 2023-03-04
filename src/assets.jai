@@ -24,20 +24,20 @@ SpriteType :: enum u8 {
 }
 
 SpriteIndex :: struct {
-    x : int;
-    y : int;
+    x : u16;
+    y : u16;
 }
 
 Rect :: struct {
-    x: int;
-    y: int;
-    width: int;
-    height: int;
+    x: s32;
+    y: s32;
+    width: s32;
+    height: s32;
 }
 
 Vector2i :: struct {
-    x: int;
-    y: int;
+    x: s32;
+    y: s32;
 }
 
 SpriteFont :: struct {
@@ -61,8 +61,8 @@ sprite_get_index :: (spr :SpriteType) -> SpriteIndex {
 }
 
 set_sprite :: (type : SpriteType, cx: int, cy: int) {
-    sprites[cast (int) type].x = cx;
-    sprites[cast (int) type].y = cy;
+    sprites[cast (int) type].x = xx cx;
+    sprites[cast (int) type].y = xx cy;
 }
 
 set_font :: (font : *SpriteFont, first_char: u8, last_char: u8, pos: Vector2i, col: int, glyph_width: int, glyph_height: int, spacing_x: int, spacing_y: int, space_width: int) {
@@ -86,18 +86,18 @@ set_font :: (font : *SpriteFont, first_char: u8, last_char: u8, pos: Vector2i, c
     for i: 0..(char_count - 1) {
         if i != 0 && i % col == 0 {
             glyph_x = pos.x;
-            glyph_y += glyph_height;
+            glyph_y += xx glyph_height;
         }
 
         glyph_rect : Rect;
         glyph_rect.x = glyph_x;
         glyph_rect.y = glyph_y;
-        glyph_rect.width = glyph_width;
-        glyph_rect.height = glyph_height;
+        glyph_rect.width = xx glyph_width;
+        glyph_rect.height = xx glyph_height;
 
         array_add(*font.glyphs, glyph_rect);
 
-        glyph_x += glyph_width;
+        glyph_x += xx glyph_width;
     }
 }
 

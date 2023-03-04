@@ -2,6 +2,13 @@
 
 levels : [] string = .[
 #string LEVEL1
+########
+#   @  #
+#  ##  #
+#  co  #
+######D#
+LEVEL1,
+#string LEVEL2
      #######
      #     # 
 ######     # 
@@ -13,14 +20,5 @@ levels : [] string = .[
 #  # #  ######
 #            #
 ##############
-LEVEL1
-,
-#string LEVEL2
-########
-#   @  #
-#  ##  #
-#  co  #
-######D#
 LEVEL2
-,
 ];
