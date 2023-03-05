@@ -109,7 +109,7 @@ set_font :: (font : *SpriteFont, first_char: u8, last_char: u8, pos: Vector2i, c
 }
 
 assets_init :: () {
-    set_sprite(.NONE, 10, 10);
+    set_sprite(.NONE, U16_MAX, U16_MAX);
 
     set_sprite(.WALL, 0, 0);
     set_sprite(.WALL_EDGE, 0, 1);
@@ -130,6 +130,7 @@ assets_init :: () {
         sprite_fill_sides[i].y = 11;        
     }
 
+    sprite_fill_corners[0b0000].x = 0;
     sprite_fill_corners[0b0001].x = 1;
     sprite_fill_corners[0b0010].x = 2;
     sprite_fill_corners[0b0011].x = 3;
@@ -146,6 +147,7 @@ assets_init :: () {
     sprite_fill_corners[0b1110].x = 14;
     sprite_fill_corners[0b1111].x = 15;
 
+    sprite_fill_sides[0b0000].x = 0;
     sprite_fill_sides[0b0001].x = 1;
     sprite_fill_sides[0b0010].x = 2;
     sprite_fill_sides[0b0011].x = 3;

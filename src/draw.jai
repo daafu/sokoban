@@ -15,6 +15,21 @@ draw_sprite :: (spr : SpriteType, draw_pos: Vector2i, color: Vector4) {
     pos.y += camera_y;
 
     si := sprite_get_index(spr);
+    if si.x == U16_MAX return;
+
+    uv0 := Vector2.{(si.x * cast(float) CELL_WIDTH) / arts.width, (arts.height - (si.y * CELL_HEIGHT)) / cast (float) arts.height};
+    Simp.immediate_quad(.{xx pos.x, xx pos.y}, Vector2.{xx (pos.x + CELL_WIDTH), xx pos.y}, Vector2.{xx (pos.x + CELL_WIDTH), xx (pos.y + CELL_HEIGHT)}, Vector2.{xx pos.x, xx (pos.y + CELL_HEIGHT)}, color,
+                uv0,
+                Vector2.{uv0.x + (cast(float) CELL_WIDTH / arts.width), uv0.y},
+                Vector2.{uv0.x + (cast(float) CELL_WIDTH / arts.width), uv0.y - (cast(float) CELL_HEIGHT / arts.height)},
+                Vector2.{uv0.x, uv0.y - (cast(float) CELL_HEIGHT / arts.height)}
+                );
+}
+
+draw_sprite :: (si : SpriteIndex, draw_pos: Vector2i, color: Vector4) {
+    pos := draw_pos;
+    pos.x += camera_x;
+    pos.y += camera_y;
 
     uv0 := Vector2.{(si.x * cast(float) CELL_WIDTH) / arts.width, (arts.height - (si.y * CELL_HEIGHT)) / cast (float) arts.height};
     Simp.immediate_quad(.{xx pos.x, xx pos.y}, Vector2.{xx (pos.x + CELL_WIDTH), xx pos.y}, Vector2.{xx (pos.x + CELL_WIDTH), xx (pos.y + CELL_HEIGHT)}, Vector2.{xx pos.x, xx (pos.y + CELL_HEIGHT)}, color,

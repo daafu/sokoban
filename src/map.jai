@@ -5,12 +5,15 @@
 TileFlag :: enum u8 {
     NONE :: 0;
     BLOCKING :: 1;
+    OUT_OF_BOUNDS :: 2;
 }
 
 Tile :: struct {
     spr : SpriteType;
     color : u8;
     flags : TileFlag;
+    fill_sides : u8;
+    fill_corners : u8;
     entity : *Entity;
 }
 
@@ -38,6 +41,20 @@ TRANS_NEXT_LEVEL_TIME :: 0.25;
 
 rand_vals : [16384] float;
 
+corner_offsets : [4] Vector2i = .[
+    Vector2i.{-1, -1},
+    Vector2i.{1, -1},
+    Vector2i.{1, 1},
+    Vector2i.{-1, 1}
+];
+
+side_offsets : [4] Vector2i = .[
+    Vector2i.{0, -1},
+    Vector2i.{1, 0},
+    Vector2i.{0, 1},
+    Vector2i.{-1, 0}
+];
+
 #scope_module
 map_init :: () {
     for v, i : rand_vals {
@@ -48,11 +65,29 @@ map_init :: () {
 map_draw :: () {
     camera_set((game_width / 2) - (map_width * CELL_WIDTH) / 2, (game_height / 2) - (map_height * CELL_HEIGHT) / 2);
 
-    i : int = 0;
-
-    tx, ty : int = 0;
+    i := 0;
     yoffset := 0;
 
+    // Draw fill first, could merge this into the loop above but lets keep it nice and seperate for now
+    for y: 0..map_height - 1 {
+        for x: 0..map_width - 1 {            
+            if reveal < 1.0 {
+                t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal + (x / 50.0) + (y / 50) + (rand_vals[i] * 0.025));
+
+                if t > 1 then t = 1;
+                yoffset = xx -((1.0 - t) * (game_height * 1));
+            }
+
+            yoffset = 0;
+
+            draw_sprite(sprite_fill_corners[map_tiles[i].fill_corners], .{xx (x * CELL_WIDTH), xx ((y * CELL_HEIGHT) + yoffset)}, pal[1]);
+            draw_sprite(sprite_fill_sides[map_tiles[i].fill_sides], .{xx (x * CELL_WIDTH), xx ((y * CELL_HEIGHT) + yoffset)}, pal[1]);
+
+            i += 1;
+        }
+    }
+
+    i = 0;
     for y: 0..map_height - 1 {
         for x: 0..map_width - 1 {            
             if reveal < 1.0 {
@@ -91,9 +126,13 @@ map_load :: (level: int) {
 
     level_str := levels[level];
 
-    for value, i : map_tiles {
+    // Clear the map
+    memset(*map_tiles, 0, size_of(type_of(map_tiles)));
+
+    // Some default tile values
+    for value, i : map_tiles {        
         map_tiles[i].spr = SpriteType.NONE;
-        map_tiles[i].entity = null;
+        map_tiles[i].flags = .OUT_OF_BOUNDS;
     }
 
     map_width = 0;
@@ -113,11 +152,6 @@ map_load :: (level: int) {
         else {
             x += 1;
         }
-    }
-
-    // Start with all empty files
-    for v, i : map_tiles {
-        map_tiles[i].spr = .NONE;
     }
 
     // Add room for borders
@@ -145,18 +179,18 @@ map_load :: (level: int) {
                     spr = .WALL;
                     flags = xx TileFlag.BLOCKING;
                     color = 4;                    
-                case #char " "; // Ground
+                case #char "."; // Ground
                     spr = .GROUND;
-                    flags = 0;
+                    flags = .NONE;
                     color = 1;
-                case #char "."; // Invisible wall
-                    spr = .GROUND;
+                case #char " "; // Out of bounds
+                    spr = .NONE;
                     flags = xx TileFlag.BLOCKING;
-                    color = 1;
+                    color = 0;
                 case #char "@"; // Player
                     spr = .GROUND;
                     color = 1;
-                    flags = 0;
+                    flags = .NONE;
 
                     player.x = x;
                     player.y = y;
@@ -165,7 +199,7 @@ map_load :: (level: int) {
                 case #char "c"; // Create
                     spr = .GROUND;
                     color = 1;
-                    flags = 0;
+                    flags = .NONE;
 
                     crate := New(Crate);
                     entity_set_snap_pos(crate, x, y);
@@ -173,9 +207,11 @@ map_load :: (level: int) {
                 case #char "o"; // Create slot
                     spr = .CRATE_SLOT;
                     color = 2;
-                    flags = 0;
+                    flags = .NONE;
                     array_add(*crate_slots, .{x, y});
-                case; spr = .NONE;
+                case;
+                    spr = .NONE;
+                    flags = .OUT_OF_BOUNDS;
             }
 
             x += 1;
@@ -207,23 +243,36 @@ map_load :: (level: int) {
     for y: 0..map_height - 1 {
         for x: 0..map_width - 1 {
             i := x + y * map_width;
-            if map_tiles[i].spr == {
-                int neighbours = 0;
+            n_sides : u8 = 0;
+            n_corners : u8 = 0;
 
-                if x > 0 {
-                    
+            if map_tiles[x + (y * map_width)].flags & .OUT_OF_BOUNDS != 0 {
+                for offset, i : side_offsets {
+                    x2 := x + offset.x;
+                    y2 := y + offset.y;
+                    if x2 < 0 || y2 < 0 || x2 >= map_width || y2 >= map_height then continue;
+
+                    if map_tiles[x2 + (y2 * map_width)].flags & .OUT_OF_BOUNDS == 0 {
+                        n_sides |= xx (1 << i);
+                    }
                 }
 
-                case .WALL;
-                    is_edge := false;
-                    if y == map_height - 1 then is_edge = true;
-                    else {
-                        if map_tiles[i + map_width].spr != .WALL then is_edge = true;
-                    }
+                for offset, i : corner_offsets {
+                    x2 := x + offset.x;
+                    y2 := y + offset.y;
+                    if x2 < 0 || y2 < 0 || x2 >= map_width || y2 >= map_height then continue;
 
-                    if is_edge then map_tiles[i].spr = .WALL_EDGE;
-                case .GROUND;
-                    // Do nothing
+                    if map_tiles[x2 + (y2 * map_width)].flags & .OUT_OF_BOUNDS == 0 {
+                        n_corners |= xx (1 << i);
+                    }
+                }
+
+                map_tiles[x + (y * map_width)].fill_sides = n_sides;
+                map_tiles[x + (y * map_width)].fill_corners = n_corners;
+            }
+            else {
+                map_tiles[x + (y * map_width)].fill_sides = 0b1111;
+                map_tiles[x + (y * map_width)].fill_corners = 0;
             }
         }
     }
