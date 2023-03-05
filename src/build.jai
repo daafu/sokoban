@@ -8,3 +8,4 @@
 #load "assets.jai";
 #load "draw.jai";
 #load "ease.jai";
+#load "audio.jai";

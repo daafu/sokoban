@@ -20,8 +20,6 @@ Simp :: #import "Simp";
 game_width : s32;
 game_height : s32;
 
-sound_player : *Sound_Player;
-
 time_delta : float;
 time_prev : float64;
 
@@ -51,15 +49,19 @@ main :: () {
     Simp.set_render_target(window);
 
     init();
-    init_gamepad();
-
+    
     time_prev = get_time();
+
+    audio_update();
+    audio_play_music("res/Build.ogg");
 
     while !should_quit_game {
         reset_temporary_storage();
         
         update_window_events();
         update_gamepad();
+
+        audio_update();
 
         // @Incomplete: Handle resizes in the actual scene drawing, which we currently don't.
         for get_window_resizes() {
@@ -117,11 +119,8 @@ main :: () {
 #scope_file
 
 init :: () {
-    sound_player = New(Sound_Player);
-    sound_player.update_history = true;
-
-    game_width = window_width / 4;
-    game_height = window_height / 4;
+    game_width = 640;
+    game_height = 360;
     
     pixel_surf = Simp.texture_create_render_target(game_width, game_height, .RGBA8, .Render_Target);
 
@@ -129,6 +128,10 @@ init :: () {
         print("Failed to load texture");
     }
 
+    audio_init();
+    init(sound_player, xx window, true, true);
+    
+    init_gamepad();
     assets_init();
     map_init();
     map_load(0);
@@ -145,11 +148,6 @@ render :: () {
     Simp.immediate_begin();
 
     map_draw();
-
-    if map_all_creates_slotted() {
-        draw_text(*font_expire, .{2, 2}, pal[7], "WIN");
-    }
-
 
     //gamepad_str := tprint("GAMEPAD CON: %  LEFT_STICK: %, %", gamepad.connected, gamepad.left_stick.x, gamepad.left_stick.y);
     //draw_text(*font_expire, .{2, 2}, pal[7], gamepad_str);
