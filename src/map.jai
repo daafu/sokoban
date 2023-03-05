@@ -115,12 +115,21 @@ map_load :: (level: int) {
         }
     }
 
+    // Start with all empty files
+    for v, i : map_tiles {
+        map_tiles[i].spr = .NONE;
+    }
+
+    // Add room for borders
+    map_width += 2;
+    map_height += 2;
+
     // Load raw level tiles
-    x = 0;
-    y = 0;
+    x = 1;
+    y = 1;
     for 0..level_str.count - 1 {
         if level_str[it] == #char "\n" {
-            x = 0;
+            x = 1;
             y += 1;
         }
         else {
@@ -180,6 +189,31 @@ map_load :: (level: int) {
         for x: 0..map_width - 1 {
             i := x + y * map_width;
             if map_tiles[i].spr == {
+                case .WALL;
+                    is_edge := false;
+                    if y == map_height - 1 then is_edge = true;
+                    else {
+                        if map_tiles[i + map_width].spr != .WALL then is_edge = true;
+                    }
+
+                    if is_edge then map_tiles[i].spr = .WALL_EDGE;
+                case .GROUND;
+                    // Do nothing
+            }
+        }
+    }
+
+    // Background border
+    for y: 0..map_height - 1 {
+        for x: 0..map_width - 1 {
+            i := x + y * map_width;
+            if map_tiles[i].spr == {
+                int neighbours = 0;
+
+                if x > 0 {
+                    
+                }
+
                 case .WALL;
                     is_edge := false;
                     if y == map_height - 1 then is_edge = true;

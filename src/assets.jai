@@ -51,7 +51,8 @@ SpriteFont :: struct {
 }
 
 sprites : [64] SpriteIndex;
-sprite_fill_corners : [256] SpriteIndex;
+sprite_fill_corners : [16] SpriteIndex;
+sprite_fill_sides : [16] SpriteIndex;
 
 
 font_expire : SpriteFont;
@@ -124,6 +125,11 @@ assets_init :: () {
         sprite_fill_corners[i].y = 10;        
     }
 
+    for v, i : sprite_fill_sides {
+        sprite_fill_sides[i].x = 0;
+        sprite_fill_sides[i].y = 11;        
+    }
+
     sprite_fill_corners[0b0001].x = 1;
     sprite_fill_corners[0b0010].x = 2;
     sprite_fill_corners[0b0011].x = 3;
@@ -139,6 +145,22 @@ assets_init :: () {
     sprite_fill_corners[0b1101].x = 13;
     sprite_fill_corners[0b1110].x = 14;
     sprite_fill_corners[0b1111].x = 15;
+
+    sprite_fill_sides[0b0001].x = 1;
+    sprite_fill_sides[0b0010].x = 2;
+    sprite_fill_sides[0b0011].x = 3;
+    sprite_fill_sides[0b0100].x = 4;
+    sprite_fill_sides[0b0101].x = 5;
+    sprite_fill_sides[0b0110].x = 6;
+    sprite_fill_sides[0b0111].x = 7;
+    sprite_fill_sides[0b1000].x = 8;
+    sprite_fill_sides[0b1001].x = 9;
+    sprite_fill_sides[0b1010].x = 10;
+    sprite_fill_sides[0b1011].x = 11;
+    sprite_fill_sides[0b1100].x = 12;
+    sprite_fill_sides[0b1101].x = 13;
+    sprite_fill_sides[0b1110].x = 14;
+    sprite_fill_sides[0b1111].x = 15;
 
     set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
 
