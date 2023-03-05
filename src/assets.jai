@@ -55,6 +55,9 @@ font_expire : SpriteFont;
 
 arts : Simp.Texture;
 
+sound_step : *Mixer_Sound_Data;
+sound_push : *Mixer_Sound_Data;
+
 sprite_get_index :: (spr :SpriteType) -> SpriteIndex {
     si : SpriteIndex = sprites[cast (int) spr];
     return si;
@@ -114,4 +117,7 @@ assets_init :: () {
     set_sprite(.DOOR_OPEN, 0, 3);
 
     set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
+
+    sound_step = audio_load("res/footstep02.wav");
+    sound_push = audio_load("res/push.wav");
 }

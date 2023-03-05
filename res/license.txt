@@ -1,6 +1,10 @@
-Art
+Sprites:
+===========
+1 bit pack tiles:
 https://www.kenney.nl/assets/bit-pack
 
+Music:
+===========
 Cunning plan
 https://opengameart.org/content/cunning-plan-short-seamless-loop
 
@@ -9,3 +13,12 @@ https://opengameart.org/content/difference
 
 Build
 https://opengameart.org/content/build
+
+
+Sound:
+===========
+footstep02
+https://opengameart.org/content/rpg-sound-pack
+
+push:
+https://freesound.org/people/ralph.whitehead/sounds/565727/

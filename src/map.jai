@@ -31,6 +31,7 @@ trans_next_level := false;
 
 #scope_file
 reveal : float = 0.0;
+resetting : bool = false;
 
 trans_next_level_timeout := TRANS_NEXT_LEVEL_TIME;
 TRANS_NEXT_LEVEL_TIME :: 0.25;
@@ -220,10 +221,26 @@ map_move_entity :: (e: *Entity, dx: int, dy: int) -> bool {
     e.x = nx;
     e.y = ny;
 
+    if e.type == {
+        case .PLAYER; audio_play_sound(sound_step, true);
+        case .CRATE; audio_play_sound(sound_push, true);
+    }
+
     return true;
 }
 
 map_update :: () {
+    if resetting {
+        reveal -= 1 * time_delta;
+        if reveal < 0 {
+            resetting = false;
+            reveal = 0;
+            map_load(current_level);
+        }
+
+        return;
+    }
+
     for entities {
         if it.type == {
             case .PLAYER; player_update(xx it);
@@ -333,7 +350,7 @@ map_remove_all_entities :: () {
 }
 
 map_reset :: () {
-    map_load(current_level);
+    resetting = true;
 }
 
 map_all_creates_slotted :: () -> bool {

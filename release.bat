@@ -1,0 +1,1 @@
+jai src/build.jai -release -exe sokoban -output_path ..

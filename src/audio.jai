@@ -29,8 +29,8 @@ audio_update :: () {
     post_entity_update(sound_player, time_delta);
 }
 
-audio_play_music :: (name: string) {
-    data := load_audio_file(name);
+audio_play_music :: (name: string, volume: float) {
+    data := audio_load(name);
 
     if !data {
         print("Could not load theme music: %\n", name);
@@ -42,7 +42,7 @@ audio_play_music :: (name: string) {
     if stream {
         stream.flags |= .REPEATING;
         stream.category = .MUSIC;
-        stream.user_volume_scale *= 1.0;
+        stream.user_volume_scale *= volume;
     }
 }
 
@@ -54,8 +54,8 @@ audio_play_sound :: (data: *Mixer_Sound_Data, perturb: bool = true) -> *Sound_St
     }
 
     if perturb && stream {
-        stream.user_volume_scale = random_get_within_range(0.7, 1);
-        stream.desired_rate = random_get_within_range(0.7, 1.22);
+        stream.user_volume_scale = random_get_within_range(0.9, 1);
+        stream.desired_rate = random_get_within_range(0.9, 1.1);
     }
 
     stream.repeat_end_position = cast(int)(cast(float)(data.nsamples_times_nchannels / data.nchannels));
@@ -63,12 +63,7 @@ audio_play_sound :: (data: *Mixer_Sound_Data, perturb: bool = true) -> *Sound_St
     return stream;
 }
 
-#scope_file
-
-music_data : *Mixer_Sound_Data;
-music_stream : *Sound_Stream;
-
-load_audio_file :: (name : string) -> *Mixer_Sound_Data {
+audio_load :: (name : string) -> *Mixer_Sound_Data {
     data : *Mixer_Sound_Data = null;
 
     file_data, success := read_entire_file(name);
@@ -121,3 +116,9 @@ load_audio_file :: (name : string) -> *Mixer_Sound_Data {
 
     return data;
 }
+
+#scope_file
+
+music_data : *Mixer_Sound_Data;
+music_stream : *Sound_Stream;
+

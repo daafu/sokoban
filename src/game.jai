@@ -53,7 +53,7 @@ main :: () {
     time_prev = get_time();
 
     audio_update();
-    audio_play_music("res/Build.ogg");
+    audio_play_music("res/Build.ogg", 0.5);
 
     while !should_quit_game {
         reset_temporary_storage();
