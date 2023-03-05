@@ -140,7 +140,7 @@ map_load :: (level: int) {
                     spr = .GROUND;
                     flags = 0;
                     color = 1;
-                case #char "%"; // Invisible wall
+                case #char "."; // Invisible wall
                     spr = .GROUND;
                     flags = xx TileFlag.BLOCKING;
                     color = 1;
