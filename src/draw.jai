@@ -58,8 +58,8 @@ draw_text :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: st
     draw_text_internal(font, draw_pos, color, text, false);
 }
 
-measure_text :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string) -> int, int {
-    width, height := draw_text_internal(font, draw_pos, color, text, true);
+measure_text :: (font : *SpriteFont, text: string) -> int, int {
+    width, height := draw_text_internal(font, .{0, 0}, .{1, 1, 1, 1}, text, true);
 
     return width, height;
 }

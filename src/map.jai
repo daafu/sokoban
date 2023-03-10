@@ -66,22 +66,25 @@ map_draw :: () {
     camera_set((game_width / 2) - (map_width * CELL_WIDTH) / 2, (game_height / 2) - (map_height * CELL_HEIGHT) / 2);
 
     i := 0;
+    xoffset := 0;
     yoffset := 0;
+
+    reveal_outline := reveal / 0.5;
+    if reveal_outline > 1 then reveal_outline = 1;
+
+    reveal_map := (reveal - 0.5) / 0.5;
+    if reveal_map < 0 then reveal_map = 0;
 
     // Draw fill first, could merge this into the loop above but lets keep it nice and seperate for now
     for y: 0..map_height - 1 {
         for x: 0..map_width - 1 {            
-            if reveal < 1.0 {
-                t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal + (x / 50.0) + (y / 50) + (rand_vals[i] * 0.025));
-
-                if t > 1 then t = 1;
-                yoffset = xx -((1.0 - t) * (game_height * 1));
+            if reveal_outline < 1.0 {
+                t := ease_interp(.BACK_OUT, 0.0, 1.0, reveal_outline);
+                xoffset = xx -((1.0 - t) * (game_width * 1));
             }
-
-            yoffset = 0;
-
-            draw_sprite(sprite_fill_corners[map_tiles[i].fill_corners], .{xx (x * CELL_WIDTH), xx ((y * CELL_HEIGHT) + yoffset)}, pal[1]);
-            draw_sprite(sprite_fill_sides[map_tiles[i].fill_sides], .{xx (x * CELL_WIDTH), xx ((y * CELL_HEIGHT) + yoffset)}, pal[1]);
+            
+            draw_sprite(sprite_fill_corners[map_tiles[i].fill_corners], .{xx ((x * CELL_WIDTH) + xoffset), xx ((y * CELL_HEIGHT))}, pal[1]);
+            draw_sprite(sprite_fill_sides[map_tiles[i].fill_sides], .{xx ((x * CELL_WIDTH) + xoffset), xx ((y * CELL_HEIGHT))}, pal[1]);
 
             i += 1;
         }
@@ -90,11 +93,11 @@ map_draw :: () {
     i = 0;
     for y: 0..map_height - 1 {
         for x: 0..map_width - 1 {            
-            if reveal < 1.0 {
-                t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal + (x / 50.0) + (y / 50) + (rand_vals[i] * 0.025));
+            if reveal_map < 1.0 {
+                t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal_map + (x / 100.0) + (y / 100) + (rand_vals[i] * 0.025));
 
                 if t > 1 then t = 1;
-                yoffset = xx -((1.0 - t) * (game_height * 1));
+                yoffset = xx -((1.0 - t) * (game_height * 1.5));
             }
 
             draw_sprite(map_tiles[i].spr, .{xx (x * CELL_WIDTH), xx ((y * CELL_HEIGHT) + yoffset)}, pal[map_tiles[i].color]);
@@ -103,7 +106,7 @@ map_draw :: () {
         }
     }
 
-    t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal);
+    t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal_map);
     yoffset = xx ((1 - t) * -(game_height * 1));
 
     for entities {
@@ -185,7 +188,7 @@ map_load :: (level: int) {
                     color = 1;
                 case #char " "; // Out of bounds
                     spr = .NONE;
-                    flags = xx TileFlag.BLOCKING;
+                    flags = xx (TileFlag.BLOCKING | TileFlag.OUT_OF_BOUNDS);
                     color = 0;
                 case #char "@"; // Player
                     spr = .GROUND;
@@ -313,8 +316,10 @@ map_move_entity :: (e: *Entity, dx: int, dy: int) -> bool {
 }
 
 map_update :: () {
+    reveal_speed := 0.66;
+
     if resetting {
-        reveal -= 1 * time_delta;
+        reveal -= reveal_speed * time_delta;
         if reveal < 0 {
             resetting = false;
             reveal = 0;
@@ -340,7 +345,7 @@ map_update :: () {
             map_tiles[i].flags = xx TileFlag.BLOCKING;
         }
 
-        reveal += 1 * time_delta;
+        reveal += reveal_speed * time_delta;
         if reveal > 1 then reveal = 1;
     }
     else {
@@ -356,7 +361,7 @@ map_update :: () {
             trans_next_level_timeout -= time_delta;
 
             if trans_next_level_timeout <= 0 {
-                reveal -= 1 * time_delta;
+                reveal -= reveal_speed * time_delta;
                 if reveal < 0 {
                     reveal = 0;
                     current_level += 1;

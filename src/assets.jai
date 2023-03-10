@@ -1,5 +1,6 @@
 #import "Basic"; //()(MEMORY_DEBUGGER=true);
 
+// https://lospec.com/palette-list/purplemorning8
 pal : [8] Vector4 : Vector4.[
     Vector4.{12 / 255.0, 7 / 255.0, 40 / 255.0, 1},         // 0
     Vector4.{28 / 255.0, 23 / 255.0, 68 / 255.0, 1},        // 1
@@ -53,7 +54,9 @@ SpriteFont :: struct {
 sprites : [64] SpriteIndex;
 sprite_fill_corners : [16] SpriteIndex;
 sprite_fill_sides : [16] SpriteIndex;
-
+sprite_title_art : Rect;
+sprite_title_text1 : Rect;
+sprite_title_text2 : Rect;
 
 font_expire : SpriteFont;
 
@@ -122,12 +125,12 @@ assets_init :: () {
 
     for v, i : sprite_fill_corners {
         sprite_fill_corners[i].x = 0;
-        sprite_fill_corners[i].y = 10;        
+        sprite_fill_corners[i].y = 6;
     }
 
     for v, i : sprite_fill_sides {
         sprite_fill_sides[i].x = 0;
-        sprite_fill_sides[i].y = 11;        
+        sprite_fill_sides[i].y = 7;
     }
 
     sprite_fill_corners[0b0000].x = 0;
@@ -163,6 +166,10 @@ assets_init :: () {
     sprite_fill_sides[0b1101].x = 13;
     sprite_fill_sides[0b1110].x = 14;
     sprite_fill_sides[0b1111].x = 15;
+
+    sprite_title_art = Rect.{0, 140, 463, 338};
+    sprite_title_text1 = Rect.{236, 0, 276, 56};
+    sprite_title_text2 = Rect.{306, 56, 206, 38};
 
     set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
 

@@ -17,6 +17,12 @@ Simp :: #import "Simp";
 
 #scope_module
 
+SceneType :: enum u8 {
+    SPLASH;
+    TITLE;
+    GAME;
+}
+
 game_width : s32;
 game_height : s32;
 
@@ -36,6 +42,7 @@ last_time : float64;
 
 should_quit_game : bool = false;
 
+current_scene : SceneType = .TITLE;
 
 #scope_module
 
@@ -45,7 +52,7 @@ main :: () {
     width  := window_width;
     height := window_height;
 
-    window = create_window(window_name="Game", width=window_width, height=window_height, background_color_rgb = .[12 / 255.0, 7 / 255.0, 40 / 255.0]);
+    window = create_window(window_name="Piotr Pushowski and the Crates", width=window_width, height=window_height, background_color_rgb = .[12 / 255.0, 7 / 255.0, 40 / 255.0]);
     Simp.set_render_target(window);
 
     init();
@@ -104,8 +111,7 @@ main :: () {
         time_delta = xx (time_current - time_prev);
         time_prev = time_current; 
 
-        map_update();
-
+        update();
         render();
 
         input_frame_end();
@@ -117,6 +123,48 @@ main :: () {
 
 
 #scope_file
+
+render :: () {
+    Simp.set_render_target(*pixel_surf);
+    Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
+
+    Simp.set_shader_for_images(*arts);
+
+    Simp.immediate_begin();
+
+    if current_scene == {
+        case .GAME; scene_game_render();
+        case .TITLE; scene_title_render();
+    }
+
+/*
+    draw_sprite(.CRATE, .{0, 0}, pal[0]);
+    draw_sprite(.CRATE, .{20, 0}, pal[1]);
+    draw_sprite(.CRATE, .{40, 0}, pal[2]);
+    draw_sprite(.CRATE, .{60, 0}, pal[3]);
+
+    draw_sprite(.CRATE, .{80, 0}, pal[4]);
+    draw_sprite(.CRATE, .{100, 0}, pal[5]);
+    draw_sprite(.CRATE, .{120, 0}, pal[6]);
+    draw_sprite(.CRATE, .{140, 0}, pal[7]);
+*/
+    Simp.immediate_flush();
+
+    Simp.set_render_target(window);
+
+    Simp.set_shader_for_images(*pixel_surf);
+
+    Simp.immediate_begin();
+    Simp.immediate_quad(Vector2.{0, xx window_height}, Vector2.{xx window_width, xx window_height}, Vector2.{xx window_width, 0}, Vector2.{0, 0}, .{1, 1, 1, 1});
+    Simp.immediate_flush();
+}
+
+update :: () {
+    if current_scene == {
+        case .GAME; scene_game_update();
+        case .TITLE; scene_title_update();
+    }
+}
 
 init :: () {
     game_width = 640;
@@ -137,33 +185,4 @@ init :: () {
     map_load(0);
 
     print("Initialized");
-}
-
-render :: () {
-    Simp.set_render_target(*pixel_surf);
-    Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
-
-    Simp.set_shader_for_images(*arts);
-
-    Simp.immediate_begin();
-
-    map_draw();
-
-    //gamepad_str := tprint("GAMEPAD CON: %  LEFT_STICK: %, %", gamepad.connected, gamepad.left_stick.x, gamepad.left_stick.y);
-    //draw_text(*font_expire, .{2, 2}, pal[7], gamepad_str);
-
-    /*
-    Simp.immediate_quad(Vector2.{0, 0}, Vector2.{16, 0}, Vector2.{16, 16}, Vector2.{0, 16}, pal[1],
-                        Vector2.{0, 1}, Vector2.{16.0 / 512, 1}, Vector2.{16.0 / 512.0, (512 - 16) / 512.0}, Vector2.{0, (512 - 16) / 512.0});
-      */                  
-    //Simp.immediate_quad(Vector2.{0, 0}, Vector2.{xx pixel_surf.width, 0}, Vector2.{xx pixel_surf.width, xx pixel_surf.height}, Vector2.{0, xx pixel_surf.height});
-    Simp.immediate_flush();
-
-    Simp.set_render_target(window);
-
-    Simp.set_shader_for_images(*pixel_surf);
-
-    Simp.immediate_begin();
-    Simp.immediate_quad(Vector2.{0, xx window_height}, Vector2.{xx window_width, xx window_height}, Vector2.{xx window_width, 0}, Vector2.{0, 0}, .{1, 1, 1, 1});
-    Simp.immediate_flush();
 }

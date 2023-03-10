@@ -9,3 +9,5 @@
 #load "draw.jai";
 #load "ease.jai";
 #load "audio.jai";
+#load "scene_game.jai";
+#load "scene_title.jai";
