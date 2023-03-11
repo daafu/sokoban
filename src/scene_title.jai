@@ -9,7 +9,12 @@
 OptionType :: enum {
     CONTINUE;
     NEW_GAME;
+    OPTIONS;
     QUIT;
+    SFX_VOL;
+    MUSIC_VOL;
+    FULLSCREEN;
+    BACK;
 }
 
 Option :: struct {
@@ -19,7 +24,10 @@ Option :: struct {
 }
 
 reveal: float = 0;
-options: [3] Option = .[.{.CONTINUE, "CONTINUE", true}, .{.NEW_GAME, "NEW GAME", true}, .{.QUIT, "QUIT", true}];
+options_main: [4] Option = .[.{.CONTINUE, "CONTINUE", true}, .{.NEW_GAME, "NEW GAME", true}, .{.OPTIONS, "OPTIONS", true}, .{.QUIT, "QUIT", true}];
+options_config: [4] Option = .[.{.SFX_VOL, "SFX VOLUME", true}, .{.MUSIC_VOL, "MUSIC VOLUME", true}, .{.FULLSCREEN, "FULLSCREEN", true}, .{.BACK, "BACK", true}];
+current_options : [] Option;
+
 first_option_y :: 160;
 option_spacing :: 20;
 hand_pos : float = xx first_option_y;
@@ -28,22 +36,16 @@ current_option := 0;
 #scope_module
 
 scene_title_init :: () {
+    current_options = options_main;
+    options_main[0].enabled = map_is_loaded();
 
+    set_first_valid_option();
 }
 
 scene_title_enter :: () {
-    options[0].enabled = map_is_loaded();
+    options_main[0].enabled = map_is_loaded();
 
-    reveal = 0;
-
-    // Find first enabled option
-    for i : 0..options.count - 1 {
-        if options[i].enabled {
-            current_option = i;
-            hand_pos : float = xx (first_option_y + (current_option * option_spacing));
-            break;
-        }
-    }    
+    reveal = 0;  
 }
 
 scene_title_exit :: () {
@@ -85,30 +87,30 @@ scene_title_update :: () {
 
     if input_button_pressed(.UP) {
         current_option -= 1;
-        while (current_option < 0 || !options[current_option].enabled) {
+        while (current_option < 0 || !current_options[current_option].enabled) {
             current_option -= 1;
             if (current_option < 0) {
-                current_option = options.count - 1;
+                current_option = current_options.count - 1;
             }
         }
     }
 
     if input_button_pressed(.DOWN) {
         current_option += 1;
-        while (current_option >= options.count || !options[current_option].enabled) {
+        while (current_option >= current_options.count || !current_options[current_option].enabled) {
             current_option += 1;
-            if (current_option >= options.count) {
+            if (current_option >= current_options.count) {
                 current_option = 0;
             }
         }
     }
 
     if current_option < 0 current_option = 0;
-    if current_option >= options.count current_option = options.count - 1;
+    if current_option >= current_options.count current_option = current_options.count - 1;
 
     if input_button_pressed(.SELECT) {
-        if options[current_option].enabled {
-            if options[current_option].type == {
+        if current_options[current_option].enabled {
+            if current_options[current_option].type == {
                 case .CONTINUE;
                     game_set_scene(.GAME);
                     audio_play_sound(sound_select, true);
@@ -135,10 +137,10 @@ draw_menu :: (t: float) {
     t1 := ease_interp(.ELASTIC_IN, 0.0, 1.0, (1 - t));
     offset : int = xx (t1 * 300);
 
-    for i : 0..options.count - 1 {
+    for i : 0..current_options.count - 1 {
         color := pal[7];
-        if !options[i].enabled color = pal[2];
-        draw_text(*font_expire, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color, options[i].name);
+        if !current_options[i].enabled color = pal[2];
+        draw_text(*font_expire, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color, current_options[i].name);
     }
 
     //draw_text(*font_expire, .{xx (125 + offset), 180}, pal[7], "NEW GAME");
@@ -147,4 +149,15 @@ draw_menu :: (t: float) {
     pointer_offset : float = xx (sin(get_time() * 10) * 4);
 
     draw_sprite(sprite_get_index(.UI_HAND), .{xx (105 + offset + pointer_offset), xx (hand_pos - 2)}, pal[7]);
+}
+
+set_first_valid_option :: () {
+    // Find first enabled option
+    for i : 0..current_options.count - 1 {
+        if current_options[i].enabled {
+            current_option = i;
+            hand_pos : float = xx (first_option_y + (current_option * option_spacing));
+            break;
+        }
+    }
 }
