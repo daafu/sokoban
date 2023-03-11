@@ -79,7 +79,9 @@ scene_title_update :: () {
     if reveal > 1 reveal = 1;
 
     hand_pos_dest : float = xx (first_option_y + (current_option * option_spacing));
-    hand_pos = xx lerp(hand_pos, hand_pos_dest, (time_delta * 25));
+    hand_pos = xx lerp(hand_pos, hand_pos_dest, (time_delta * 40));
+
+    prev_option := current_option;
 
     if input_button_pressed(.UP) {
         current_option -= 1;
@@ -109,15 +111,22 @@ scene_title_update :: () {
             if options[current_option].type == {
                 case .CONTINUE;
                     game_set_scene(.GAME);
+                    audio_play_sound(sound_select, true);
                     
                 case .NEW_GAME;
                     map_load(0);
                     game_set_scene(.GAME);
+                    audio_play_sound(sound_select, true);
 
                 case .QUIT;
-                    game_quit();
+                    game_set_scene(.QUIT);
+                    audio_play_sound(sound_select, true);
             }
         }
+    }
+
+    if prev_option != current_option {
+        audio_play_sound(sound_option, true);
     }
 }
 

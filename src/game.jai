@@ -22,6 +22,7 @@ SceneType :: enum u8 {
     SPLASH;
     TITLE;
     GAME;
+    QUIT;
 }
 
 game_width : s32;
@@ -56,11 +57,6 @@ game_set_scene :: (scene: SceneType) {
     }
 
     next_scene = scene;
-
-    if next_scene == {
-        case .TITLE; scene_title_enter();
-        case .GAME; scene_game_enter();
-    }
 
     // Reveal immediately if there is no other scene
     if current_scene == .NONE {
@@ -219,6 +215,12 @@ update :: () {
             scene_reveal = 0;
             current_scene = next_scene;
             next_scene = .NONE;
+
+            if current_scene == {
+                case .TITLE; scene_title_enter();
+                case .GAME; scene_game_enter();
+                case .QUIT; scene_quit_enter();
+            }
         }
     }
     else {

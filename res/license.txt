@@ -1,24 +1,30 @@
 Sprites:
 ===========
-1 bit pack tiles:
+1 bit pack tiles (CC0):
 https://www.kenney.nl/assets/bit-pack
 
 Music:
 ===========
-Cunning plan
+Cunning plan (CC0):
 https://opengameart.org/content/cunning-plan-short-seamless-loop
 
-Difference
+Difference (CC0):
 https://opengameart.org/content/difference
 
-Build
+Build (CC0):
 https://opengameart.org/content/build
 
 
 Sound:
 ===========
-footstep02
+footstep02 (CC0):
 https://opengameart.org/content/rpg-sound-pack
 
-push:
+push (CC0):
 https://freesound.org/people/ralph.whitehead/sounds/565727/
+
+vgmenuhighlight (CC0):
+https://opengameart.org/content/8bit-menu-highlight
+
+vgmenuselect (CC0):
+https://opengameart.org/content/8bit-menu-select
