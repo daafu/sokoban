@@ -18,6 +18,7 @@ Simp :: #import "Simp";
 #scope_module
 
 SceneType :: enum u8 {
+    NONE;
     SPLASH;
     TITLE;
     GAME;
@@ -42,9 +43,36 @@ last_time : float64;
 
 should_quit_game : bool = false;
 
-current_scene : SceneType = .TITLE;
+current_scene : SceneType;
+next_scene : SceneType = .NONE;
+scene_reveal : float = 0.0;
 
 #scope_module
+
+game_set_scene :: (scene: SceneType) {
+    if current_scene == {
+        case .TITLE; scene_title_exit();
+        case .GAME; scene_game_exit();
+    }
+
+    next_scene = scene;
+
+    if next_scene == {
+        case .TITLE; scene_title_enter();
+        case .GAME; scene_game_enter();
+    }
+
+    // Reveal immediately if there is no other scene
+    if current_scene == .NONE {
+        current_scene = next_scene;
+        scene_reveal = 1.0;
+        next_scene = .NONE;
+    }
+}
+
+game_quit :: () {
+    should_quit_game = true;
+}
 
 main :: () {
     last_time = get_time();
@@ -56,7 +84,8 @@ main :: () {
     Simp.set_render_target(window);
 
     init();
-    
+    game_set_scene(.TITLE);
+
     time_prev = get_time();
 
     audio_update();
@@ -91,12 +120,7 @@ main :: () {
                 }
 
                 case .KEYBOARD; {
-                    if event.key_code == .ESCAPE {
-                        if event.key_pressed {
-                            should_quit_game = true;
-                        }
-                    }
-                    else if event.key_code == .F1 {
+                    if event.key_code == .F1 {
                         init_gamepad();
                     }
 
@@ -137,6 +161,8 @@ render :: () {
         case .TITLE; scene_title_render();
     }
 
+    scene_fade();
+
 /*
     draw_sprite(.CRATE, .{0, 0}, pal[0]);
     draw_sprite(.CRATE, .{20, 0}, pal[1]);
@@ -159,10 +185,45 @@ render :: () {
     Simp.immediate_flush();
 }
 
+scene_fade :: () {
+    fade_color := Vector4.{0, 0, 0, 1};
+
+    t := ease_interp(.SINE_IN, 0.0, 1.0, scene_reveal);
+
+    x_offset : int = xx (((t * 1.75) * game_width) - 450);
+    x_stagger : int = 0;
+    y_offset : int = 0;
+
+    while y_offset < game_height {
+        draw_sprite(.FADE_IN_SLANT, .{xx (x_offset + x_stagger), xx y_offset}, fade_color);
+        draw_sprite(.FADE_SOLID, .{xx (x_offset + x_stagger + 16), xx y_offset, xx (game_width * 1.75), 16}, fade_color);
+        y_offset += 16;
+        x_offset += 16;
+        //x_stagger += 16;
+    }    
+}
+
 update :: () {
-    if current_scene == {
-        case .GAME; scene_game_update();
-        case .TITLE; scene_title_update();
+    if (scene_reveal >= 1) {
+        if current_scene == {
+            case .GAME; scene_game_update();
+            case .TITLE; scene_title_update();
+        }
+    }
+
+    fade_speed :: 2.5;
+
+    if next_scene != .NONE {
+        scene_reveal -= time_delta * fade_speed;
+        if scene_reveal < 0 {
+            scene_reveal = 0;
+            current_scene = next_scene;
+            next_scene = .NONE;
+        }
+    }
+    else {
+        scene_reveal += time_delta * fade_speed;
+        if scene_reveal > 1 scene_reveal = 1;
     }
 }
 
@@ -182,7 +243,9 @@ init :: () {
     init_gamepad();
     assets_init();
     map_init();
-    map_load(0);
+
+    scene_title_init();
+    scene_game_init();
 
     print("Initialized");
 }

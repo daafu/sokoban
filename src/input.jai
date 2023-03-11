@@ -9,6 +9,8 @@ Button :: enum {
     UP;
     DOWN;
 
+    SELECT;
+
     RESET;
 }
 
@@ -29,7 +31,12 @@ input_handle_keyboard_event :: (ev: Event) {
         case #char "W"; button_pressed[cast (int) Button.UP] = xx ev.key_pressed;
         case #char "S"; button_pressed[cast (int) Button.DOWN] = xx ev.key_pressed;
 
+        case .ENTER; button_pressed[cast (int) Button.SELECT] = xx ev.key_pressed;
+        case .SPACEBAR; button_pressed[cast (int) Button.SELECT] = xx ev.key_pressed;
+
         case .BACKSPACE; button_pressed[cast (int) Button.RESET] = xx ev.key_pressed;
+
+        case .ESCAPE; button_pressed[cast (int) Button.ESCAPE] = xx ev.key_pressed;
     }
 /*
                 if key == .ARROW_LEFT   key_left  = event.key_pressed;

@@ -22,6 +22,10 @@ SpriteType :: enum u8 {
     CRATE_SLOT;
     DOOR_CLOSED;
     DOOR_OPEN;
+    UI_HAND;
+    FADE_IN_SLANT;
+    FADE_OUT_SLANT;
+    FADE_SOLID;
 }
 
 SpriteIndex :: struct {
@@ -122,6 +126,11 @@ assets_init :: () {
     set_sprite(.CRATE_SLOT, 3, 0);
     set_sprite(.DOOR_CLOSED, 0, 2);
     set_sprite(.DOOR_OPEN, 0, 3);
+
+    set_sprite(.UI_HAND, 16, 6);
+    set_sprite(.FADE_IN_SLANT, 17, 6);
+    set_sprite(.FADE_SOLID, 18, 6);
+    set_sprite(.FADE_OUT_SLANT, 19, 6);
 
     for v, i : sprite_fill_corners {
         sprite_fill_corners[i].x = 0;

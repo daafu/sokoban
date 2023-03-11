@@ -26,7 +26,7 @@ crate_slots : [..] Vector2i;
 
 player : Player;
 
-current_level := 0;
+current_level := -1;
 
 door_pos : Vector2i = Vector2i.{-1, -1};
 
@@ -56,6 +56,10 @@ side_offsets : [4] Vector2i = .[
 ];
 
 #scope_module
+map_is_loaded :: () -> bool {
+    return current_level != -1;
+}
+
 map_init :: () {
     for v, i : rand_vals {
         rand_vals[i] = random_get_zero_to_one();
@@ -119,6 +123,8 @@ map_draw :: () {
 }
 
 map_load :: (level: int) {
+    reveal = 0;
+
     trans_next_level := false;
     trans_next_level_timeout := TRANS_NEXT_LEVEL_TIME;
 
