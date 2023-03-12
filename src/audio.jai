@@ -4,6 +4,8 @@
 #scope_module
 
 sound_player : *Sound_Player;
+music_stream : *Sound_Stream;
+music_base_volume : float = 1;
 
 audio_init :: () {
     sound_player = New(Sound_Player);
@@ -26,6 +28,10 @@ audio_update :: () {
         it.marked = true;
     }
 
+    if music_stream {
+        music_stream.user_volume_scale = music_base_volume * options_get_music_volume();
+    }
+
     post_entity_update(sound_player, time_delta);
 }
 
@@ -37,16 +43,22 @@ audio_play_music :: (name: string, volume: float) {
         exit(1);
     }
 
-    stream := audio_play_sound(data, false);
+    music_stream = audio_play_sound(data, false);
 
-    if stream {
-        stream.flags |= .REPEATING;
-        stream.category = .MUSIC;
-        stream.user_volume_scale *= volume;
+    if music_stream {
+        music_base_volume = volume;
+
+        music_stream.flags |= .REPEATING;
+        music_stream.category = .MUSIC;
+        music_stream.user_volume_scale = music_base_volume * options_get_music_volume();
     }
 }
 
 audio_play_sound :: (data: *Mixer_Sound_Data, perturb: bool = true) -> *Sound_Stream {
+    if options_get_sfx_volume() == 0 {
+        return null;
+    }
+
     stream := make_stream(sound_player, data);
 
     if stream {
@@ -57,6 +69,8 @@ audio_play_sound :: (data: *Mixer_Sound_Data, perturb: bool = true) -> *Sound_St
         stream.user_volume_scale = random_get_within_range(0.9, 1);
         stream.desired_rate = random_get_within_range(0.9, 1.1);
     }
+
+    stream.user_volume_scale *= options_get_sfx_volume();
 
     stream.repeat_end_position = cast(int)(cast(float)(data.nsamples_times_nchannels / data.nchannels));
     

@@ -33,6 +33,7 @@ door_pos : Vector2i = Vector2i.{-1, -1};
 trans_next_level := false;
 
 #scope_file
+
 reveal : float = 0.0;
 resetting : bool = false;
 
@@ -56,7 +57,7 @@ side_offsets : [4] Vector2i = .[
 ];
 
 #scope_module
-map_is_loaded :: () -> bool {
+map_save_available :: () -> bool {
     return current_level != -1;
 }
 
@@ -455,4 +456,12 @@ map_all_creates_slotted :: () -> bool {
     }
 
     return true;
+}
+
+map_save :: (data: *SavedGame) {
+    data.current_level = xx current_level;
+}
+
+map_load :: (data: *SavedGame) {
+    current_level = xx data.current_level;
 }

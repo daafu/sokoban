@@ -17,35 +17,87 @@ OptionType :: enum {
     BACK;
 }
 
+OptionValueType :: enum {
+    NONE;
+    INTEGER;
+    BOOL;
+}
+
 Option :: struct {
     type: OptionType;
     name: string;
     enabled: bool = false;
+    value_type : OptionValueType = .NONE;
+    value_int : int = 0;
+    value_int_min : int = 0;
+    value_int_max : int = 5;
 }
 
 reveal: float = 0;
-options_main: [4] Option = .[.{.CONTINUE, "CONTINUE", true}, .{.NEW_GAME, "NEW GAME", true}, .{.OPTIONS, "OPTIONS", true}, .{.QUIT, "QUIT", true}];
-options_config: [4] Option = .[.{.SFX_VOL, "SFX VOLUME", true}, .{.MUSIC_VOL, "MUSIC VOLUME", true}, .{.FULLSCREEN, "FULLSCREEN", true}, .{.BACK, "BACK", true}];
+options_main: [4] Option = .[
+    .{.CONTINUE, "CONTINUE", true, .NONE, 0, 0, 0},
+    .{.NEW_GAME, "NEW GAME", true, .NONE, 0, 0, 0},
+    .{.OPTIONS, "OPTIONS", true, .NONE,  0, 0, 0},
+    .{.QUIT, "QUIT", true, .NONE, 0, 0, 0}];
+
+options_config: [4] Option = .[
+    .{.SFX_VOL, "SFX VOLUME", true, .INTEGER, 3, 0, 4},
+    .{.MUSIC_VOL, "MUSIC VOLUME", true, .INTEGER, 3, 0, 4},
+    .{.FULLSCREEN, "FULLSCREEN", true, .BOOL, 1, 0, 1},
+    .{.BACK, "BACK", true, .NONE, 0, 0, 0}];
+
 current_options : [] Option;
+next_options : [] Option = .[];
+
+options_reveal : float = 0;
 
 first_option_y :: 160;
 option_spacing :: 20;
 hand_pos : float = xx first_option_y;
 current_option := 0;
 
+
 #scope_module
+
+// These are a little backwards, getting value from UI rather than the other way around!
+options_get_sfx_volume :: () -> float {
+    return (cast (float) options_config[0].value_int) / (cast (float) options_config[0].value_int_max);
+}
+
+options_get_music_volume :: () -> float {
+    return (cast (float) options_config[1].value_int) / (cast (float) options_config[1].value_int_max);
+}
+
+options_get_fullscreen :: () -> bool {
+    return xx options_config[2].value_int;
+}
+
+options_save :: (opts: *SavedGame) {
+    opts.sfx_volume = xx options_config[0].value_int;
+    opts.music_volume = xx options_config[1].value_int;
+    opts.fullscreen = xx options_config[2].value_int;
+}
+
+options_load :: (opts: *SavedGame) {
+    options_config[0].value_int = xx opts.sfx_volume ;
+    options_config[1].value_int = xx opts.music_volume;
+    options_config[2].value_int = xx opts.fullscreen;
+}
 
 scene_title_init :: () {
     current_options = options_main;
-    options_main[0].enabled = map_is_loaded();
+    options_main[0].enabled = map_save_available();
 
     set_first_valid_option();
 }
 
 scene_title_enter :: () {
-    options_main[0].enabled = map_is_loaded();
+    options_main[0].enabled = map_save_available();
 
-    reveal = 0;  
+    reveal = 0;
+    options_reveal = 0;
+    current_options = options_main;
+    set_first_valid_option();
 }
 
 scene_title_exit :: () {
@@ -55,7 +107,7 @@ scene_title_exit :: () {
 scene_title_render :: () {
     // Menu
     offset := 0;
-    t := util_part_progress(reveal, 0.75, 1);
+    t := options_reveal;
     if t > 0 {
         draw_menu(t);
     }
@@ -63,7 +115,7 @@ scene_title_render :: () {
     // Title Text
     t = util_part_progress(reveal, 0.5, 0.7);
     t = ease_interp(.BOUNCE_IN, 0.0, 1.0, (1 - t));
-    offset = xx (t * (-100));
+    offset = xx (t * (-110));
 
     draw_copy(*sprite_title_text1, Vector2i.{12, xx (8 + offset)}, Vector4.{1, 1, 1, 1});
     draw_copy(*sprite_title_text2, Vector2i.{48, xx (64 + offset)}, Vector4.{1, 1, 1, 1});
@@ -79,6 +131,22 @@ scene_title_render :: () {
 scene_title_update :: () {
     reveal += time_delta * 0.65;
     if reveal > 1 reveal = 1;
+
+    if reveal >= 1 && next_options.count == 0 {
+        options_reveal += time_delta * 1.25;
+        if options_reveal > 1 options_reveal = 1;
+    }
+    else {
+        options_reveal -= time_delta * 1.75;
+        if options_reveal < 0 {
+            options_reveal = 0;
+            if next_options.count != 0 {
+                current_options = next_options;
+                next_options = .[];
+                set_first_valid_option();
+            }
+        }
+    }
 
     hand_pos_dest : float = xx (first_option_y + (current_option * option_spacing));
     hand_pos = xx lerp(hand_pos, hand_pos_dest, (time_delta * 40));
@@ -105,12 +173,28 @@ scene_title_update :: () {
         }
     }
 
+    if current_options[current_option].value_type == .INTEGER {
+        if input_button_pressed(.LEFT) {
+            if current_options[current_option].value_int > current_options[current_option].value_int_min {
+                current_options[current_option].value_int -= 1;
+                audio_play_sound(sound_select, true);
+            }
+        }
+        else if input_button_pressed(.RIGHT) {
+            if current_options[current_option].value_int < current_options[current_option].value_int_max {
+                current_options[current_option].value_int += 1;
+                audio_play_sound(sound_select, true);
+            }
+        }
+    }
+
     if current_option < 0 current_option = 0;
     if current_option >= current_options.count current_option = current_options.count - 1;
 
     if input_button_pressed(.SELECT) {
         if current_options[current_option].enabled {
             if current_options[current_option].type == {
+                // Main
                 case .CONTINUE;
                     game_set_scene(.GAME);
                     audio_play_sound(sound_select, true);
@@ -120,8 +204,37 @@ scene_title_update :: () {
                     game_set_scene(.GAME);
                     audio_play_sound(sound_select, true);
 
+                case .OPTIONS;
+                    next_options = options_config;
+                    audio_play_sound(sound_select, true);
+
                 case .QUIT;
+                    game_save();
                     game_set_scene(.QUIT);
+                    audio_play_sound(sound_select, true);
+
+                // Config
+                case .SFX_VOL;
+                    audio_play_sound(sound_select, true);
+                    
+                case .MUSIC_VOL;
+                    audio_play_sound(sound_select, true);
+
+                case .FULLSCREEN;
+                    if options_config[2].value_int == 0 {
+                        options_config[2].value_int = 1;
+                    }
+                    else {
+                        options_config[2].value_int = 0;
+                    }
+
+                    game_toggle_fullscreen(options_get_fullscreen());
+
+                    audio_play_sound(sound_select, true);
+
+                case .BACK;
+                    game_save();
+                    next_options = options_main;
                     audio_play_sound(sound_select, true);
             }
         }
@@ -140,11 +253,26 @@ draw_menu :: (t: float) {
     for i : 0..current_options.count - 1 {
         color := pal[7];
         if !current_options[i].enabled color = pal[2];
-        draw_text(*font_expire, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color, current_options[i].name);
-    }
 
-    //draw_text(*font_expire, .{xx (125 + offset), 180}, pal[7], "NEW GAME");
-    //draw_text(*font_expire, .{xx (125 + offset), 200}, pal[7], "QUIT");
+        if current_options[i].value_type == {
+            case .NONE;
+                draw_text(*font_expire, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color, current_options[i].name);
+
+            case .INTEGER;
+                draw_text(*font_expire, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color, current_options[i].name);
+                draw_copy(*sprite_slider_bar, .{xx (125 + offset + 100), xx (first_option_y + (i * option_spacing))}, pal[3]);
+                draw_copy(*sprite_slider_tag, .{xx (125 + offset + 103 + (current_options[i].value_int * 3)), xx (first_option_y + (i * option_spacing))}, pal[7]);
+
+            case .BOOL;
+                draw_text(*font_expire, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color, current_options[i].name);
+                if (current_options[i].value_int > 0) {
+                    draw_copy(*sprite_checkbox_on, .{xx (125 + offset + 100), xx (first_option_y + (i * option_spacing))}, pal[7]);
+                }
+                else {
+                    draw_copy(*sprite_checkbox_off, .{xx (125 + offset + 100), xx (first_option_y + (i * option_spacing))}, pal[3]);
+                }
+        }
+    }
 
     pointer_offset : float = xx (sin(get_time() * 10) * 4);
 

@@ -1,2 +1,3 @@
-Piotr Pushowski and the Crates
+TODO:
+Make sure user input is ignored during any kind of transition, be it menus or level transition
 

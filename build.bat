@@ -1,1 +1,1 @@
-jai src/build.jai -exe sokoban -output_path ..
+jai src/build.jai -exe piotr -output_path ..

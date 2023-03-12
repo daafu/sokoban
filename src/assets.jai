@@ -61,6 +61,10 @@ sprite_fill_sides : [16] SpriteIndex;
 sprite_title_art : Rect;
 sprite_title_text1 : Rect;
 sprite_title_text2 : Rect;
+sprite_slider_tag : Rect;
+sprite_slider_bar : Rect;
+sprite_checkbox_off : Rect;
+sprite_checkbox_on : Rect;
 
 font_expire : SpriteFont;
 
@@ -181,6 +185,11 @@ assets_init :: () {
     sprite_title_art = Rect.{0, 140, 463, 338};
     sprite_title_text1 = Rect.{236, 0, 276, 56};
     sprite_title_text2 = Rect.{306, 56, 206, 38};
+
+    sprite_slider_tag = Rect.{256, 116, 5, 8};
+    sprite_slider_bar = Rect.{262, 116, 23, 8};
+    sprite_checkbox_off = Rect.{288, 115, 10, 10};
+    sprite_checkbox_on = Rect.{304, 115, 10, 10};
 
     set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
 

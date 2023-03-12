@@ -4,15 +4,23 @@
 #import "File";
 #import "String";
 
+loaded_once := false;
+
 scene_game_init :: () {
 }
 
 scene_game_enter :: () {
+    if !loaded_once {
+        if current_level >= 0 {
+            map_load(current_level);
+        }
 
+        loaded_once = true;
+    }
 }
 
 scene_game_exit :: () {
-
+    game_save();
 }
 
 scene_game_render :: () {

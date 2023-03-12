@@ -31,10 +31,22 @@ game_height : s32;
 time_delta : float;
 time_prev : float64;
 
+SavedGame :: struct {
+    version: u32;
+    res_width: u32;
+    res_height: u32;
+    sfx_volume: u32;
+    music_volume: u32;
+    fullscreen: u32;
+    current_level: s32;
+}
+
 #scope_file
 
 window_width : s32 = 1280; 
 window_height : s32 = 720;
+
+prev_window_info : Saved_Window_Info;
 
 window : Window_Type;
 
@@ -47,6 +59,11 @@ should_quit_game : bool = false;
 current_scene : SceneType;
 next_scene : SceneType = .NONE;
 scene_reveal : float = 0.0;
+
+save_game_file : string;
+save_game_path : string;
+
+SAVE_VERSION : u32 : 1;
 
 #scope_module
 
@@ -70,13 +87,82 @@ game_quit :: () {
     should_quit_game = true;
 }
 
+game_toggle_fullscreen :: (fullscreen: bool) {
+    fullscreen_success, window_width, window_height := toggle_fullscreen(window, fullscreen, *prev_window_info);
+}
+
+game_save :: () {
+    data := SavedGame.{
+        SAVE_VERSION,
+        1280,
+        720,
+        0,
+        0,
+        0,
+        -1,
+    };
+
+    options_save(*data);
+    map_save(*data);
+
+    // Create path incase it doesn't exist
+    make_directory_if_it_does_not_exist(save_game_path, false);
+
+    fp, success := file_open(save_game_file, true, false, false);
+    if success {
+        success = file_write(*fp, xx *data, xx size_of(SavedGame));
+        file_close(*fp);
+    }
+}
+
+game_load :: () {
+    data : SavedGame;
+
+    fp, success := file_open(save_game_file, false, false, false);
+    if success {
+        // Read out version first
+        version : u32 = 0;
+        success = file_read(*fp, xx *version, xx size_of(type_of(version)));
+        if (success) {
+            file_seek(fp, 0, .START);
+
+            if version == SAVE_VERSION {
+                success, bytes_read := file_read(*fp, xx *data, size_of(SavedGame));
+
+                if (success) {
+                    options_load(*data);
+                    map_load(*data);
+                }
+            }
+            else {
+                // TODO Version conversion
+            }
+
+            file_close(*fp);
+        }
+    }
+
+    //file_read :: (f: File, vdata: *void, bytes_to_read: s64) -> (success: bool, bytes_read: s64) {
+}
+
 main :: () {
     last_time = get_time();
+
+    save_game_path = sprint("%/Piotr", get_path_os_saved_games());
+    replace_chars(save_game_path, "\\", #char "/");
+    save_game_file = sprint("%/saved_game.dat", save_game_path);
+
+    game_load();
 
     width  := window_width;
     height := window_height;
 
     window = create_window(window_name="Piotr Pushowski and the Crates", width=window_width, height=window_height, background_color_rgb = .[12 / 255.0, 7 / 255.0, 40 / 255.0]);
+
+    if (options_get_fullscreen()) {
+        game_toggle_fullscreen(true);
+    }
+    
     Simp.set_render_target(window);
 
     init();
@@ -177,7 +263,27 @@ render :: () {
     Simp.set_shader_for_images(*pixel_surf);
 
     Simp.immediate_begin();
-    Simp.immediate_quad(Vector2.{0, xx window_height}, Vector2.{xx window_width, xx window_height}, Vector2.{xx window_width, 0}, Vector2.{0, 0}, .{1, 1, 1, 1});
+
+    // Calculate render width / height and offsets based on 16:9 aspect requirement
+    render_width := window_width;
+    render_height := window_height;
+    x_offset := 0;
+    y_offset := 0;
+
+    aspect_ratio := cast(float)window_width / cast(float)window_height;
+
+    if aspect_ratio < 16.0 / 9.0 {
+        // Too tall, bars on top and bottom
+        render_height = cast(s32)(cast(float)window_width * (9.0 / 16.0));
+        y_offset = (window_height - render_height) / 2;
+    }
+    else if aspect_ratio > 16.0 / 9.0 {
+        // Too wide, bars on left and right
+        render_width = cast(s32)(cast(float)window_height * (16.0 / 9.0));
+        x_offset = (window_width - render_width) / 2;
+    }
+
+    Simp.immediate_quad(Vector2.{xx x_offset, xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx y_offset}, Vector2.{xx x_offset, xx y_offset}, .{1, 1, 1, 1});
     Simp.immediate_flush();
 }
 

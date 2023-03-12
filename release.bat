@@ -1,1 +1,1 @@
-jai src/build.jai -release -exe sokoban -output_path ..
+jai src/build.jai -release -exe piotr -output_path ..
