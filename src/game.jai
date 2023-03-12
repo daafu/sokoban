@@ -228,8 +228,10 @@ main :: () {
 #scope_file
 
 render :: () {
+    border_color := Vector4.{8 / 255.0, 8 / 255.0, 8 / 255.0, 1};
+
     Simp.set_render_target(window);
-    Simp.clear_render_target(0, 0, 0, 1);
+    Simp.clear_render_target(border_color.x, border_color.y, border_color.z, border_color.w);
 
     Simp.set_render_target(*pixel_surf);
     Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
@@ -245,6 +247,11 @@ render :: () {
 
     scene_fade();
 
+    // Draw border, necessary for curvature effect
+    draw_sprite(.FADE_SOLID, .{0, 0, 1, game_height}, border_color);
+    draw_sprite(.FADE_SOLID, .{game_width - 1, 0, 1, game_height}, border_color);
+    draw_sprite(.FADE_SOLID, .{0, 0, game_width, 1}, border_color);
+    draw_sprite(.FADE_SOLID, .{0, game_height - 1, game_width, 1}, border_color);
 /*
     draw_sprite(.CRATE, .{0, 0}, pal[0]);
     draw_sprite(.CRATE, .{20, 0}, pal[1]);
@@ -262,10 +269,6 @@ render :: () {
     Simp.immediate_flush();
 
     Simp.set_render_target(window);
-
-    Simp.set_shader_for_images(*pixel_surf);
-
-    Simp.immediate_begin();
 
     // Calculate render width / height and offsets based on 16:9 aspect requirement
     render_width := window_width;
@@ -286,6 +289,30 @@ render :: () {
         x_offset = (window_width - render_width) / 2;
     }
 
+
+    //Simp.set_shader_for_images(*pixel_surf);
+    //immediate_set_shader(*shader_present);
+//    CheckInit();
+
+    immediate_flush();
+    immediate_set_shader(*shader_present);
+    texture_size_loc := glGetUniformLocation(shader_present.gl_handle, "texture0Size");
+    screen_native_size_loc := glGetUniformLocation(shader_present.gl_handle, "screenNativeSize");
+
+    glUniform2f(texture_size_loc, xx game_width, xx game_height);
+    glUniform2f(screen_native_size_loc, xx render_width, xx render_height);
+
+    set_projection();
+    immediate_set_texture(*pixel_surf);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    //immediate_set_texture(texture);
+
+
+
+    Simp.immediate_begin();
     Simp.immediate_quad(Vector2.{xx x_offset, xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx y_offset}, Vector2.{xx x_offset, xx y_offset}, .{1, 1, 1, 1});
     Simp.immediate_flush();
 }

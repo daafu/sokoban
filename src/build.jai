@@ -17,4 +17,4 @@
 #load "scene_title.jai";
 #load "scene_quit.jai";
 
-// #run disable_runtime_console();
+#run disable_runtime_console();
