@@ -80,19 +80,30 @@ map_draw :: () {
     reveal_map := (reveal - 0.5) / 0.5;
     if reveal_map < 0 then reveal_map = 0;
 
+    if reveal_outline < 1.0 {
+        t := ease_interp(.BACK_OUT, 0.0, 1.0, reveal_outline);
+        xoffset = xx -((1.0 - t) * (game_width * 1));
+    }
+
     // Draw fill first, could merge this into the loop above but lets keep it nice and seperate for now
     for y: 0..map_height - 1 {
-        for x: 0..map_width - 1 {            
-            if reveal_outline < 1.0 {
-                t := ease_interp(.BACK_OUT, 0.0, 1.0, reveal_outline);
-                xoffset = xx -((1.0 - t) * (game_width * 1));
-            }
-            
+        for x: 0..map_width - 1 {                        
             draw_sprite(sprite_fill_corners[map_tiles[i].fill_corners], .{xx ((x * CELL_WIDTH) + xoffset), xx ((y * CELL_HEIGHT))}, pal[1]);
             draw_sprite(sprite_fill_sides[map_tiles[i].fill_sides], .{xx ((x * CELL_WIDTH) + xoffset), xx ((y * CELL_HEIGHT))}, pal[1]);
 
             i += 1;
         }
+    }
+
+    // First level only, draw help
+    if current_level == 0 {
+        ycenter := (map_height * CELL_HEIGHT / 2);
+        xcenter := (map_width * CELL_WIDTH / 2);
+
+        ycenter -= 15;
+        xcenter -= 30;
+        draw_copy(sprite_help1, .{ xx (xcenter + xoffset + 6), xx (ycenter)}, pal[3]);
+        draw_copy(sprite_help2, .{ xx (xcenter + xoffset), xx (ycenter + 17)}, pal[3]);
     }
 
     i = 0;

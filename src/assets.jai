@@ -68,6 +68,9 @@ sprite_slider_bar : Rect;
 sprite_checkbox_off : Rect;
 sprite_checkbox_on : Rect;
 
+sprite_help1 : Rect;
+sprite_help2 : Rect;
+
 font_expire : SpriteFont;
 
 arts : Simp.Texture;
@@ -195,6 +198,9 @@ assets_init :: () {
     sprite_slider_bar = Rect.{262, 116, 23, 8};
     sprite_checkbox_off = Rect.{288, 115, 10, 10};
     sprite_checkbox_on = Rect.{304, 115, 10, 10};
+
+    sprite_help1 = Rect.{320, 96, 44, 13};
+    sprite_help2 = Rect.{320, 112, 55, 15};
 
     set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
 

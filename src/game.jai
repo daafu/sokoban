@@ -289,11 +289,7 @@ render :: () {
         x_offset = (window_width - render_width) / 2;
     }
 
-
-    //Simp.set_shader_for_images(*pixel_surf);
-    //immediate_set_shader(*shader_present);
-//    CheckInit();
-
+    // Setup present
     immediate_flush();
     immediate_set_shader(*shader_present);
     texture_size_loc := glGetUniformLocation(shader_present.gl_handle, "texture0Size");
@@ -308,10 +304,7 @@ render :: () {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    //immediate_set_texture(texture);
-
-
-
+    // Draw present
     Simp.immediate_begin();
     Simp.immediate_quad(Vector2.{xx x_offset, xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx y_offset}, Vector2.{xx x_offset, xx y_offset}, .{1, 1, 1, 1});
     Simp.immediate_flush();
