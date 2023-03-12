@@ -10,6 +10,7 @@ Button :: enum {
     DOWN;
 
     SELECT;
+    CANCEL;
 
     RESET;
 }
@@ -36,7 +37,10 @@ input_handle_keyboard_event :: (ev: Event) {
 
         case .BACKSPACE; button_pressed[cast (int) Button.RESET] = xx ev.key_pressed;
 
-        case .ESCAPE; button_pressed[cast (int) Button.ESCAPE] = xx ev.key_pressed;
+        case .ESCAPE; {
+            button_pressed[cast (int) Button.ESCAPE] = xx ev.key_pressed;
+            button_pressed[cast (int) Button.CANCEL] = xx ev.key_pressed; // reusing ESCAPE
+        }
     }
 /*
                 if key == .ARROW_LEFT   key_left  = event.key_pressed;
@@ -50,9 +54,37 @@ input_handle_keyboard_event :: (ev: Event) {
 }
 
 input_handle_gamepad :: () {
+    dead_zone :: 0.35;
+    analog := gamepad_get_analog();
+
+    if abs(analog.x) > abs(analog.y) {
+        if analog.x < -dead_zone button_pressed[cast (int) Button.LEFT] = true;
+        else if analog.x > dead_zone button_pressed[cast (int) Button.RIGHT] = true;
+    }
+    else {
+        if analog.y < -dead_zone button_pressed[cast (int) Button.UP] = true;
+        else if analog.y > dead_zone button_pressed[cast (int) Button.DOWN] = true;
+    }
+
+    if gamepad_get_button(.DPAD_LEFT) button_pressed[cast (int) Button.LEFT] = true;
+    if gamepad_get_button(.DPAD_RIGHT) button_pressed[cast (int) Button.RIGHT] = true;
+    if gamepad_get_button(.DPAD_UP) button_pressed[cast (int) Button.UP] = true;
+    if gamepad_get_button(.DPAD_DOWN) button_pressed[cast (int) Button.DOWN] = true;
+
+    if gamepad_get_button(.SOUTH) button_pressed[cast (int) Button.SELECT] = true;
+    if gamepad_get_button(.EAST) button_pressed[cast (int) Button.CANCEL] = true;
+    if gamepad_get_button(.NORTH) button_pressed[cast (int) Button.RESET] = true;
+
+    if gamepad_get_button(.TOUCHPAD) button_pressed[cast (int) Button.ESCAPE] = true;
+    if gamepad_get_button(.OPTIONS) button_pressed[cast (int) Button.ESCAPE] = true;
+    if gamepad_get_button(.START) button_pressed[cast (int) Button.ESCAPE] = true;
+    if gamepad_get_button(.BACK) button_pressed[cast (int) Button.ESCAPE] = true;
+
+    /*
     if gamepad.left_stick.x < 0.2 {
         //button_pressed[cast (int) Button.LEFT] = true;
     }
+    */
 }
 
 input_frame_end :: () {

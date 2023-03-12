@@ -11,7 +11,8 @@
 #import "Thread";
 #import "Input";
 #import "System";
-#import "Gamepad";
+
+#import "SDL";
 
 Simp :: #import "Simp";
 
@@ -177,7 +178,7 @@ main :: () {
         reset_temporary_storage();
         
         update_window_events();
-        update_gamepad();
+        gamepad_update();
 
         audio_update();
 
@@ -202,10 +203,6 @@ main :: () {
                 }
 
                 case .KEYBOARD; {
-                    if event.key_code == .F1 {
-                        init_gamepad();
-                    }
-
                     input_handle_keyboard_event(event);
                 }   
             }
@@ -231,6 +228,9 @@ main :: () {
 #scope_file
 
 render :: () {
+    Simp.set_render_target(window);
+    Simp.clear_render_target(0, 0, 0, 1);
+
     Simp.set_render_target(*pixel_surf);
     Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
 
@@ -256,6 +256,9 @@ render :: () {
     draw_sprite(.CRATE, .{120, 0}, pal[6]);
     draw_sprite(.CRATE, .{140, 0}, pal[7]);
 */
+    //analog := gamepad_get_analog();
+    //draw_text(*font_expire, .{ 2, 2 }, pal[7], tprint("% %", analog.x, analog.y));
+
     Simp.immediate_flush();
 
     Simp.set_render_target(window);
@@ -342,18 +345,19 @@ init :: () {
     pixel_surf = Simp.texture_create_render_target(game_width, game_height, .RGBA8, .Render_Target);
 
     if (!Simp.texture_load_from_file(*arts, "res/arts.png")) {
-        print("Failed to load texture");
+        print("Failed to load texture\n");
     }
 
     audio_init();
+    gamepad_init();
+
     init(sound_player, xx window, true, true);
     
-    init_gamepad();
     assets_init();
     map_init();
 
     scene_title_init();
     scene_game_init();
 
-    print("Initialized");
+    print("Initialized\n");
 }

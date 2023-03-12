@@ -1,3 +1,3 @@
 TODO:
 Make sure user input is ignored during any kind of transition, be it menus or level transition
-
+De-noise controls so moving up and left can't happen too quick, put some wait before movements, and filter gamepad axis so diagonal can't happen

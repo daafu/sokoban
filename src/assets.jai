@@ -74,6 +74,7 @@ sound_step : *Mixer_Sound_Data;
 sound_push : *Mixer_Sound_Data;
 sound_option : *Mixer_Sound_Data;
 sound_select : *Mixer_Sound_Data;
+sound_cancel : *Mixer_Sound_Data;
 
 sprite_get_index :: (spr :SpriteType) -> SpriteIndex {
     si : SpriteIndex = sprites[cast (int) spr];
@@ -197,4 +198,5 @@ assets_init :: () {
     sound_push = audio_load("res/push.wav");
     sound_option = audio_load("res/vgmenuhighlight.wav");
     sound_select = audio_load("res/vgmenuselect.wav");
+    sound_cancel = audio_load("res/vgmenuselect_reverse.wav");
 }

@@ -7,9 +7,17 @@ sound_player : *Sound_Player;
 music_stream : *Sound_Stream;
 music_base_volume : float = 1;
 
+#scope_file
+
+initialized := false;
+
+#scope_module
+
 audio_init :: () {
     sound_player = New(Sound_Player);
     sound_player.update_history = true;    
+
+    initialized := true;
 }
 
 audio_update :: () {
@@ -55,7 +63,7 @@ audio_play_music :: (name: string, volume: float) {
 }
 
 audio_play_sound :: (data: *Mixer_Sound_Data, perturb: bool = true) -> *Sound_Stream {
-    if options_get_sfx_volume() == 0 {
+    if data == null || options_get_sfx_volume() == 0 {
         return null;
     }
 

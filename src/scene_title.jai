@@ -211,14 +211,12 @@ scene_title_update :: () {
                 case .QUIT;
                     game_save();
                     game_set_scene(.QUIT);
-                    audio_play_sound(sound_select, true);
+                    audio_play_sound(sound_cancel, true);
 
                 // Config
                 case .SFX_VOL;
-                    audio_play_sound(sound_select, true);
                     
                 case .MUSIC_VOL;
-                    audio_play_sound(sound_select, true);
 
                 case .FULLSCREEN;
                     if options_config[2].value_int == 0 {
@@ -235,9 +233,16 @@ scene_title_update :: () {
                 case .BACK;
                     game_save();
                     next_options = options_main;
-                    audio_play_sound(sound_select, true);
+                    audio_play_sound(sound_cancel, true);
             }
         }
+    }
+
+    // Back out of options using cancel button
+    if input_button_pressed(.CANCEL) && current_options.data == options_config.data {
+        game_save();
+        audio_play_sound(sound_cancel, true);
+        next_options = options_main;
     }
 
     if prev_option != current_option {
