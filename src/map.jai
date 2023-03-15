@@ -68,6 +68,15 @@ map_init :: () {
 }
 
 map_draw :: () {
+    draw_copy(sprite_help2, .{ xx (game_width - 60), xx (4)}, pal[3]);
+
+    // Draw level
+    if reveal > 0.75 {
+        t := (reveal - 0.75) / 0.25;
+        draw_text(*font_expire, .{xx (game_width / 2 - 24), xx (game_height - (20 * ease_interp(.BACK_OUT, 0.0, 1.0, t) - 8))}, pal[3], tprint("Level %", (current_level + 1)));
+    }
+
+
     camera_set((game_width / 2) - (map_width * CELL_WIDTH) / 2, (game_height / 2) - (map_height * CELL_HEIGHT) / 2);
 
     i := 0;
@@ -100,17 +109,16 @@ map_draw :: () {
         ycenter := (map_height * CELL_HEIGHT / 2);
         xcenter := (map_width * CELL_WIDTH / 2);
 
-        ycenter -= 15;
+        ycenter -= 5;
         xcenter -= 30;
         draw_copy(sprite_help1, .{ xx (xcenter + xoffset + 6), xx (ycenter)}, pal[3]);
-        draw_copy(sprite_help2, .{ xx (xcenter + xoffset), xx (ycenter + 17)}, pal[3]);
     }
 
     i = 0;
     for y: 0..map_height - 1 {
         for x: 0..map_width - 1 {            
             if reveal_map < 1.0 {
-                t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal_map + (x / 100.0) + (y / 100) + (rand_vals[i] * 0.025));
+                t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal_map + (x / 150.0) + (y / 150) + (rand_vals[i] * 0.025));
 
                 if t > 1 then t = 1;
                 yoffset = xx -((1.0 - t) * (game_height * 1.5));
@@ -127,6 +135,8 @@ map_draw :: () {
 
     for entities {
         if it.type == {
+            case .PLAYER; player_draw(it, yoffset);
+            case .CRATE; crate_draw(it, yoffset);
             case; entity_draw(it, yoffset);
         }
     }
@@ -199,11 +209,11 @@ map_load :: (level: int) {
                 case #char "#"; // Wall
                     spr = .WALL;
                     flags = xx TileFlag.BLOCKING;
-                    color = 4;                    
+                    color = 3;                    
                 case #char "."; // Ground
                     spr = .GROUND;
                     flags = .NONE;
-                    color = 1;
+                    color = 3;
                 case #char " "; // Out of bounds
                     spr = .NONE;
                     flags = xx (TileFlag.BLOCKING | TileFlag.OUT_OF_BOUNDS);
@@ -255,7 +265,14 @@ map_load :: (level: int) {
 
                     if is_edge then map_tiles[i].spr = .WALL_EDGE;
                 case .GROUND;
-                    // Do nothing
+                    // Only change ground if not first level, first level needs to be clean
+                    // for the tutorial help message
+                    if current_level > 0 {
+                        random_grass := cast(int)(random_get_within_range(0, 20));
+                        if random_grass >= 0 && random_grass <= 9 {
+                            map_tiles[i].spr = xx (cast(int)SpriteType.GRASS1 + random_grass);
+                        }
+                    }
             }
         }
     }
@@ -334,7 +351,7 @@ map_move_entity :: (e: *Entity, dx: int, dy: int) -> bool {
 }
 
 map_update :: () {
-    reveal_speed := 0.66;
+    reveal_speed := 0.55;
 
     if resetting {
         reveal -= reveal_speed * time_delta;
@@ -347,10 +364,13 @@ map_update :: () {
         return;
     }
 
-    for entities {
-        if it.type == {
-            case .PLAYER; player_update(xx it);
-            case; entity_update(it);
+    // Don't process entities until revealed
+    if reveal > 0.9 {
+        for entities {
+            if it.type == {
+                case .PLAYER; player_update(xx it);
+                case; entity_update(it);
+            }
         }
     }
 
@@ -460,6 +480,8 @@ map_reset :: () {
 }
 
 map_all_creates_slotted :: () -> bool {
+    if crate_slots.count == 0 return false;
+
     for slot: crate_slots {
         if map_tiles[slot.x + slot.y * map_width].entity == null || map_tiles[slot.x + slot.y * map_width].entity.type != .CRATE {
             return false;

@@ -168,7 +168,7 @@ main :: () {
 
     init();
     game_set_scene(.TITLE);
-
+    
     time_prev = get_time();
 
     audio_update();
@@ -222,8 +222,6 @@ main :: () {
         Simp.swap_buffers(window);
     }
 }
-
-
 
 #scope_file
 

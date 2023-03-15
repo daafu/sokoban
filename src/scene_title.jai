@@ -153,6 +153,9 @@ scene_title_update :: () {
 
     prev_option := current_option;
 
+    // Don't process any input if transitioning
+    if reveal < 0.8 || options_reveal < 0.6 then return;
+
     if input_button_pressed(.UP) {
         current_option -= 1;
         while (current_option < 0 || !current_options[current_option].enabled) {

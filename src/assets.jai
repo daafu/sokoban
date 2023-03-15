@@ -28,6 +28,16 @@ SpriteType :: enum u8 {
     FADE_IN_SLANT;
     FADE_OUT_SLANT;
     FADE_SOLID;
+    GRASS1;
+    GRASS2;
+    GRASS3;
+    GRASS4;
+    GRASS5;
+    GRASS6;
+    GRASS7;
+    GRASS8;
+    GRASS9;
+    GRASS10;
 }
 
 SpriteIndex :: struct {
@@ -145,6 +155,17 @@ assets_init :: () {
     set_sprite(.FADE_IN_SLANT, 17, 6);
     set_sprite(.FADE_SOLID, 18, 6);
     set_sprite(.FADE_OUT_SLANT, 19, 6);
+
+    set_sprite(.GRASS1, 4, 0);
+    set_sprite(.GRASS2, 5, 0);
+    set_sprite(.GRASS3, 6, 0);
+    set_sprite(.GRASS4, 7, 0);
+    set_sprite(.GRASS5, 8, 0);
+    set_sprite(.GRASS6, 9, 0);
+    set_sprite(.GRASS7, 10, 0);
+    set_sprite(.GRASS8, 11, 0);
+    set_sprite(.GRASS9, 12, 0);
+    set_sprite(.GRASS10, 13, 0);
 
     for v, i : sprite_fill_corners {
         sprite_fill_corners[i].x = 0;

@@ -1,3 +1,5 @@
 TODO:
-Make sure user input is ignored during any kind of transition, be it menus or level transition
-De-noise controls so moving up and left can't happen too quick, put some wait before movements, and filter gamepad axis so diagonal can't happen
+Do a level select screen instead of new/continue. Can make it in game, walk around and select levels
+Need sounds for: create landing in slot, create leaving slot (maybe), door opening, door closing, leaving level
+Reduce volume of step sound
+Last level has a door in a weird place, it should not even have a door, possibly tile data not cleared properly

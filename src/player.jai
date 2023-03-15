@@ -8,6 +8,12 @@ Player :: struct {
     base.flags = xx EntityFlags.PUSHER;    
 }
 
+player_draw :: (e: Entity, yoffset: int) {
+    si := sprite_get_index(e.spr);
+    si.y = xx ((cast(int)(get_time() * 4)) % 2);
+    draw_sprite(si, .{xx (e.vx * CELL_WIDTH + 0.5), xx ((e.vy * CELL_HEIGHT + 0.5) + yoffset)}, pal[e.color]);
+}
+
 player_update :: (p : *Player) {
     entity_update(p);
 
