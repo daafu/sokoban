@@ -69,6 +69,8 @@ SAVE_VERSION : u32 : 1;
 #scope_module
 
 game_set_scene :: (scene: SceneType) {
+    audio_play_sound(sound_scene_swish, true);
+
     if current_scene == {
         case .TITLE; scene_title_exit();
         case .GAME; scene_game_exit();
@@ -172,7 +174,7 @@ main :: () {
     time_prev = get_time();
 
     audio_update();
-    audio_play_music("res/Build.ogg", 0.5);
+    audio_play_music("res/music_build.ogg", 0.5);
 
     while !should_quit_game {
         reset_temporary_storage();
@@ -342,6 +344,8 @@ update :: () {
             scene_reveal = 0;
             current_scene = next_scene;
             next_scene = .NONE;
+
+            audio_play_sound(sound_scene_swish, true);
 
             if current_scene == {
                 case .TITLE; scene_title_enter();

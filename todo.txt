@@ -1,5 +1,4 @@
 TODO:
-Do a level select screen instead of new/continue. Can make it in game, walk around and select levels
-Need sounds for: create landing in slot, create leaving slot (maybe), door opening, door closing, leaving level
-Reduce volume of step sound
-Last level has a door in a weird place, it should not even have a door, possibly tile data not cleared properly
+NAAAH - Do a level select screen instead of new/continue. Can make it in game, walk around and select levels
+Need swish sounds for scene transitions
+Key repeat

@@ -35,6 +35,7 @@ trans_next_level := false;
 #scope_file
 
 reveal : float = 0.0;
+prev_reveal : float = 0.0;
 resetting : bool = false;
 
 trans_next_level_timeout := TRANS_NEXT_LEVEL_TIME;
@@ -159,6 +160,8 @@ map_load :: (level: int) {
 
     // Clear the map
     memset(*map_tiles, 0, size_of(type_of(map_tiles)));
+
+    door_pos = .{-1, -1};
 
     // Some default tile values
     for value, i : map_tiles {        
@@ -314,8 +317,6 @@ map_load :: (level: int) {
             }
         }
     }
-
-    print("Map size: % x %\n", map_width, map_height);
 }
 
 map_move_entity :: (e: *Entity, dx: int, dy: int) -> bool {
@@ -350,16 +351,22 @@ map_move_entity :: (e: *Entity, dx: int, dy: int) -> bool {
     return true;
 }
 
-map_update :: () {
+map_update :: () {    
     reveal_speed := 0.55;
 
     if resetting {
         reveal -= reveal_speed * time_delta;
         if reveal < 0 {
             resetting = false;
-            reveal = 0;
+            reveal = 0;            
             map_load(current_level);
         }
+
+        if prev_reveal > 0.5 && reveal <= 0.5 {
+            audio_play_sound(sound_drawer_open, true);
+        }
+
+        prev_reveal = reveal;
 
         return;
     }
@@ -374,11 +381,21 @@ map_update :: () {
         }
     }
 
+    if prev_reveal < 0.35 && reveal >= 0.35 {
+        audio_play_sound(sound_drawer_snap, true);
+    }
+
+    prev_reveal = reveal;
+
     if !map_all_creates_slotted() {
         trans_next_level = false;
 
         if door_pos.x != -1 {
             i := door_pos.x + door_pos.y * map_width;
+            if map_tiles[i].spr == .DOOR_OPEN {
+                audio_play_sound(sound_door_close, true);                
+            }
+
             map_tiles[i].spr = .DOOR_CLOSED;
             map_tiles[i].flags = xx TileFlag.BLOCKING;
         }
@@ -389,11 +406,19 @@ map_update :: () {
     else {
         if door_pos.x != -1 {
             i := door_pos.x + door_pos.y * map_width;
+            if map_tiles[i].spr == .DOOR_CLOSED {
+                audio_play_sound(sound_door_open, true);                
+            }
+
             map_tiles[i].spr = .DOOR_OPEN;
             map_tiles[i].flags = 0;
         }
 
         if player.x == door_pos.x && player.y == door_pos.y {
+            if trans_next_level == false {
+                audio_play_sound(sound_win, true);
+            }
+
             trans_next_level = true;
 
             trans_next_level_timeout -= time_delta;
@@ -407,6 +432,12 @@ map_update :: () {
 
                     map_load(current_level);
                 }
+
+                if prev_reveal > 0.5 && reveal <= 0.5 {
+                    audio_play_sound(sound_drawer_open, true);
+                }
+
+                prev_reveal = reveal;
             }
         }
         else {

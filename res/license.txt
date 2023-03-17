@@ -1,30 +1,42 @@
-Sprites:
+Sprites (CC0):
 ===========
-1 bit pack tiles (CC0):
+1 bit pack tiles:
 https://www.kenney.nl/assets/bit-pack
 
-Music:
+Music (CC0):
 ===========
-Cunning plan (CC0):
-https://opengameart.org/content/cunning-plan-short-seamless-loop
-
-Difference (CC0):
-https://opengameart.org/content/difference
-
-Build (CC0):
+music_build.ogg:
 https://opengameart.org/content/build
 
 
-Sound:
+Sound (CC0):
 ===========
-footstep02 (CC0):
+door_open.wav:
 https://opengameart.org/content/rpg-sound-pack
 
-push (CC0):
+door_close.wav:
+https://opengameart.org/content/door-open-door-close
+
+push.wav:
 https://freesound.org/people/ralph.whitehead/sounds/565727/
 
-vgmenuhighlight (CC0):
+option.wav:
 https://opengameart.org/content/8bit-menu-highlight
 
-vgmenuselect (CC0):
+select.wav:
+cancel.wav:
 https://opengameart.org/content/8bit-menu-select
+
+footstep.wav:
+https://opengameart.org/content/42-snow-and-gravel-footsteps
+
+level_done.wav:
+https://opengameart.org/content/level-up-power-up-coin-get-13-sounds
+
+swish.wav:
+https://opengameart.org/content/swishes-sound-pack
+
+draw_open:
+draw_snap:
+https://freesound.org/people/ec3638/sounds/619994/
+

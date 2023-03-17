@@ -90,6 +90,12 @@ sound_push : *Mixer_Sound_Data;
 sound_option : *Mixer_Sound_Data;
 sound_select : *Mixer_Sound_Data;
 sound_cancel : *Mixer_Sound_Data;
+sound_door_open : *Mixer_Sound_Data;
+sound_door_close : *Mixer_Sound_Data;
+sound_win : *Mixer_Sound_Data;
+sound_scene_swish : *Mixer_Sound_Data;
+sound_drawer_open : *Mixer_Sound_Data;
+sound_drawer_snap : *Mixer_Sound_Data;
 
 shader_present : Shader;
 
@@ -225,11 +231,17 @@ assets_init :: () {
 
     set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
 
-    sound_step = audio_load("res/footstep02.wav");
+    sound_step = audio_load("res/footstep.wav");
     sound_push = audio_load("res/push.wav");
-    sound_option = audio_load("res/vgmenuhighlight.wav");
-    sound_select = audio_load("res/vgmenuselect.wav");
-    sound_cancel = audio_load("res/vgmenuselect_reverse.wav");
+    sound_option = audio_load("res/option.wav");
+    sound_select = audio_load("res/select.wav");
+    sound_cancel = audio_load("res/cancel.wav");
+    sound_door_open = audio_load("res/door_open.wav");
+    sound_door_close = audio_load("res/door_close.wav");
+    sound_win = audio_load("res/level_done.wav");
+    sound_scene_swish = audio_load("res/swish.wav");
+    sound_drawer_open = audio_load("res/drawer_open.wav");
+    sound_drawer_snap = audio_load("res/drawer_snap.wav");
 
     shader_present.gl_handle   = get_shader_program(SHADER_PRESENT);
     shader_present.alpha_blend = false;
