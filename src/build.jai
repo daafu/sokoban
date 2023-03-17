@@ -16,5 +16,6 @@
 #load "scene_game.jai";
 #load "scene_title.jai";
 #load "scene_quit.jai";
+#load "scene_splash.jai";
 
 #run disable_runtime_console();

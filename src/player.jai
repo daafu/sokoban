@@ -29,12 +29,14 @@ player_update :: (p : *Player) {
         return;
     }
 
-    if input_button_pressed(.LEFT) dx -= 1;
-    if input_button_pressed(.RIGHT) dx += 1;
+    btn_repeat :: 20;
+
+    if input_button_pressed(.LEFT, btn_repeat) dx -= 1;
+    if input_button_pressed(.RIGHT, btn_repeat) dx += 1;
 
     if (dx == 0) {
-        if input_button_pressed(.UP) dy -= 1;
-        if input_button_pressed(.DOWN) dy += 1;
+        if input_button_pressed(.UP, btn_repeat) dy -= 1;
+        if input_button_pressed(.DOWN, btn_repeat) dy += 1;
     }
 
     if (dx == 0 && dy == 0) {

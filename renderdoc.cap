@@ -5,7 +5,7 @@
         "commandLine": "",
         "environment": [
         ],
-        "executable": "C:\\git\\sokoban\\game.exe",
+        "executable": "C:\\git\\sokoban\\piotr.exe",
         "inject": false,
         "numQueuedFrames": 0,
         "options": {

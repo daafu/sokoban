@@ -29,6 +29,9 @@ SceneType :: enum u8 {
 game_width : s32;
 game_height : s32;
 
+window_width : s32 = 1280; 
+window_height : s32 = 720;
+
 time_delta : float;
 time_prev : float64;
 
@@ -42,10 +45,9 @@ SavedGame :: struct {
     current_level: s32;
 }
 
-#scope_file
+frame_count : int = 0;
 
-window_width : s32 = 1280; 
-window_height : s32 = 720;
+#scope_file
 
 prev_window_info : Saved_Window_Info;
 
@@ -69,11 +71,14 @@ SAVE_VERSION : u32 : 1;
 #scope_module
 
 game_set_scene :: (scene: SceneType) {
-    audio_play_sound(sound_scene_swish, true);
+    if scene != .SPLASH && current_scene != .SPLASH {
+        audio_play_sound(sound_scene_swish, true);
+    }
 
     if current_scene == {
         case .TITLE; scene_title_exit();
         case .GAME; scene_game_exit();
+        case .SPLASH; scene_splash_exit();
     }
 
     next_scene = scene;
@@ -169,12 +174,11 @@ main :: () {
     Simp.set_render_target(window);
 
     init();
-    game_set_scene(.TITLE);
+    game_set_scene(.SPLASH);
     
     time_prev = get_time();
 
     audio_update();
-    audio_play_music("res/music_build.ogg", 0.5);
 
     while !should_quit_game {
         reset_temporary_storage();
@@ -218,10 +222,12 @@ main :: () {
 
         update();
         render();
-
+        
         input_frame_end();
 
         Simp.swap_buffers(window);
+
+        frame_count += 1;
     }
 }
 
@@ -230,84 +236,89 @@ main :: () {
 render :: () {
     border_color := Vector4.{8 / 255.0, 8 / 255.0, 8 / 255.0, 1};
 
-    Simp.set_render_target(window);
-    Simp.clear_render_target(border_color.x, border_color.y, border_color.z, border_color.w);
+    if current_scene == .SPLASH {
+        Simp.set_render_target(window);
+        Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
 
-    Simp.set_render_target(*pixel_surf);
-    Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
+        Simp.set_shader_for_images(*logo);
 
-    Simp.set_shader_for_images(*arts);
+        Simp.immediate_begin();
 
-    Simp.immediate_begin();
+        if current_scene == {
+            case .SPLASH; scene_splash_render();
+        }
 
-    if current_scene == {
-        case .GAME; scene_game_render();
-        case .TITLE; scene_title_render();
+        Simp.immediate_flush();
     }
+    else {
+        Simp.set_render_target(window);
+        Simp.clear_render_target(border_color.x, border_color.y, border_color.z, border_color.w);
 
-    scene_fade();
+        Simp.set_render_target(*pixel_surf);
+        Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
 
-    // Draw border, necessary for curvature effect
-    draw_sprite(.FADE_SOLID, .{0, 0, 1, game_height}, border_color);
-    draw_sprite(.FADE_SOLID, .{game_width - 1, 0, 1, game_height}, border_color);
-    draw_sprite(.FADE_SOLID, .{0, 0, game_width, 1}, border_color);
-    draw_sprite(.FADE_SOLID, .{0, game_height - 1, game_width, 1}, border_color);
-/*
-    draw_sprite(.CRATE, .{0, 0}, pal[0]);
-    draw_sprite(.CRATE, .{20, 0}, pal[1]);
-    draw_sprite(.CRATE, .{40, 0}, pal[2]);
-    draw_sprite(.CRATE, .{60, 0}, pal[3]);
+        Simp.set_shader_for_images(*arts);
 
-    draw_sprite(.CRATE, .{80, 0}, pal[4]);
-    draw_sprite(.CRATE, .{100, 0}, pal[5]);
-    draw_sprite(.CRATE, .{120, 0}, pal[6]);
-    draw_sprite(.CRATE, .{140, 0}, pal[7]);
-*/
-    //analog := gamepad_get_analog();
-    //draw_text(*font_expire, .{ 2, 2 }, pal[7], tprint("% %", analog.x, analog.y));
+        Simp.immediate_begin();
 
-    Simp.immediate_flush();
+        if current_scene == {
+            case .GAME; scene_game_render();
+            case .TITLE; scene_title_render();
+        }
 
-    Simp.set_render_target(window);
+        scene_fade();
 
-    // Calculate render width / height and offsets based on 16:9 aspect requirement
-    render_width := window_width;
-    render_height := window_height;
-    x_offset := 0;
-    y_offset := 0;
+        // Draw border, necessary for curvature effect
+        draw_sprite(.FADE_SOLID, .{0, 0, 1, game_height}, border_color);
+        draw_sprite(.FADE_SOLID, .{game_width - 1, 0, 1, game_height}, border_color);
+        draw_sprite(.FADE_SOLID, .{0, 0, game_width, 1}, border_color);
+        draw_sprite(.FADE_SOLID, .{0, game_height - 1, game_width, 1}, border_color);
 
-    aspect_ratio := cast(float)window_width / cast(float)window_height;
+        Simp.immediate_flush();
 
-    if aspect_ratio < 16.0 / 9.0 {
-        // Too tall, bars on top and bottom
-        render_height = cast(s32)(cast(float)window_width * (9.0 / 16.0));
-        y_offset = (window_height - render_height) / 2;
+        Simp.set_render_target(window);
+
+        // Calculate render width / height and offsets based on 16:9 aspect requirement
+        render_width := window_width;
+        render_height := window_height;
+        x_offset := 0;
+        y_offset := 0;
+
+        aspect_ratio := cast(float)window_width / cast(float)window_height;
+
+        if aspect_ratio < 16.0 / 9.0 {
+            // Too tall, bars on top and bottom
+            render_height = cast(s32)(cast(float)window_width * (9.0 / 16.0));
+            y_offset = (window_height - render_height) / 2;
+        }
+        else if aspect_ratio > 16.0 / 9.0 {
+            // Too wide, bars on left and right
+            render_width = cast(s32)(cast(float)window_height * (16.0 / 9.0));
+            x_offset = (window_width - render_width) / 2;
+        }
+
+        // Setup present
+        immediate_flush();
+        immediate_set_shader(*shader_present);
+        texture_size_loc := glGetUniformLocation(shader_present.gl_handle, "texture0Size");
+        screen_native_size_loc := glGetUniformLocation(shader_present.gl_handle, "screenNativeSize");
+
+        glUniform2f(texture_size_loc, xx game_width, xx game_height);
+        glUniform2f(screen_native_size_loc, xx render_width, xx render_height);
+
+        set_projection();
+        immediate_set_texture(*pixel_surf);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        // Draw present
+        Simp.immediate_begin();
+        Simp.immediate_quad(Vector2.{xx x_offset, xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx y_offset}, Vector2.{xx x_offset, xx y_offset}, .{1, 1, 1, 1});
+        Simp.immediate_flush();
     }
-    else if aspect_ratio > 16.0 / 9.0 {
-        // Too wide, bars on left and right
-        render_width = cast(s32)(cast(float)window_height * (16.0 / 9.0));
-        x_offset = (window_width - render_width) / 2;
-    }
-
-    // Setup present
-    immediate_flush();
-    immediate_set_shader(*shader_present);
-    texture_size_loc := glGetUniformLocation(shader_present.gl_handle, "texture0Size");
-    screen_native_size_loc := glGetUniformLocation(shader_present.gl_handle, "screenNativeSize");
-
-    glUniform2f(texture_size_loc, xx game_width, xx game_height);
-    glUniform2f(screen_native_size_loc, xx render_width, xx render_height);
-
-    set_projection();
-    immediate_set_texture(*pixel_surf);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    // Draw present
-    Simp.immediate_begin();
-    Simp.immediate_quad(Vector2.{xx x_offset, xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx y_offset}, Vector2.{xx x_offset, xx y_offset}, .{1, 1, 1, 1});
-    Simp.immediate_flush();
 }
 
 scene_fade :: () {
@@ -333,6 +344,7 @@ update :: () {
         if current_scene == {
             case .GAME; scene_game_update();
             case .TITLE; scene_title_update();
+            case .SPLASH; scene_splash_update();
         }
     }
 
@@ -345,12 +357,15 @@ update :: () {
             current_scene = next_scene;
             next_scene = .NONE;
 
-            audio_play_sound(sound_scene_swish, true);
+            if current_scene != .SPLASH {
+                audio_play_sound(sound_scene_swish, true);
+            }
 
             if current_scene == {
                 case .TITLE; scene_title_enter();
                 case .GAME; scene_game_enter();
                 case .QUIT; scene_quit_enter();
+                case .SPLASH; scene_splash_enter();
             }
         }
     }
@@ -365,10 +380,6 @@ init :: () {
     game_height = 360;
     
     pixel_surf = Simp.texture_create_render_target(game_width, game_height, .RGBA8, .Render_Target);
-
-    if (!Simp.texture_load_from_file(*arts, "res/arts.png")) {
-        print("Failed to load texture\n");
-    }
 
     audio_init();
     gamepad_init();

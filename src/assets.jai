@@ -78,12 +78,15 @@ sprite_slider_bar : Rect;
 sprite_checkbox_off : Rect;
 sprite_checkbox_on : Rect;
 
+sprite_logo : Rect;
+
 sprite_help1 : Rect;
 sprite_help2 : Rect;
 
 font_expire : SpriteFont;
 
 arts : Simp.Texture;
+logo : Simp.Texture;
 
 sound_step : *Mixer_Sound_Data;
 sound_push : *Mixer_Sound_Data;
@@ -146,6 +149,9 @@ set_font :: (font : *SpriteFont, first_char: u8, last_char: u8, pos: Vector2i, c
 }
 
 assets_init :: () {
+    Simp.texture_load_from_file(*arts, "res/arts.png");
+    Simp.texture_load_from_file(*logo, "res/logo_trans.png");
+
     set_sprite(.NONE, U16_MAX, U16_MAX);
 
     set_sprite(.WALL, 0, 0);
@@ -228,6 +234,8 @@ assets_init :: () {
 
     sprite_help1 = Rect.{320, 96, 44, 13};
     sprite_help2 = Rect.{320, 112, 55, 15};
+
+    sprite_logo = Rect.{0, 0, 1024, 1024};
 
     set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
 
