@@ -1,4 +1,14 @@
-#import "Windows_Resources";
+#if OS == .MACOS {
+    
+}
+
+#if OS == .LINUX {
+    
+}
+
+#if OS == .WINDOWS {
+    #import "Windows_Resources";
+}
 
 #load "game.jai";
 #load "map.jai";
@@ -18,4 +28,6 @@
 #load "scene_quit.jai";
 #load "scene_splash.jai";
 
-#run disable_runtime_console();
+#if OS == .WINDOWS {
+    #run disable_runtime_console();
+}

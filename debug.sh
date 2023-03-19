@@ -1,0 +1,1 @@
+jai-linux src/build.jai -exe piotr -output_path ..

@@ -156,7 +156,21 @@ game_load :: () {
 main :: () {
     last_time = get_time();
 
-    save_game_path = sprint("%/Piotr", get_path_os_saved_games());
+    sdl_version : SDL_version;
+    SDL_GetVersion(*sdl_version);
+    print("Using SDL %.%.%\n", sdl_version.major, sdl_version.minor, sdl_version.patch);
+
+    #if OS == .WINDOWS {
+        save_game_path = sprint("%/Piotr", get_path_os_saved_games());
+    }
+    
+    #if OS == .LINUX {
+        libc :: #system_library "libc";
+        getenv :: (env_var: *u8) -> *u8 #foreign libc;
+        home_path := to_string(getenv("HOME"));
+        save_game_path = sprint("%/Documents/Piotr", home_path);
+    }
+
     replace_chars(save_game_path, "\\", #char "/");
     save_game_file = sprint("%/saved_game.dat", save_game_path);
 
@@ -391,6 +405,4 @@ init :: () {
 
     scene_title_init();
     scene_game_init();
-
-    print("Initialized\n");
 }

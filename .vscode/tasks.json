@@ -6,7 +6,8 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "${workspaceFolder}/build.bat",
+            "windows": { "command": "${workspaceFolder}/debug.bat" },
+            "linux": { "command": "${workspaceFolder}/debug.sh" },
             "problemMatcher": [],
             "group": {
                 "kind": "build",

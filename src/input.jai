@@ -149,7 +149,7 @@ update_button :: (btn : Button, pressed: bool) {
 
     if pressed && !button_was_pressed[cast(int)btn].pressed {
         button_pressed[cast(int)btn].frame = frame_count;
-        print("Button % frame %\n", btn, frame_count);
+        // print("Button % frame %\n", btn, frame_count);
     }
     else if !pressed && button_was_pressed[cast(int)btn].pressed {
         button_pressed[cast(int)btn].frame = 0;

@@ -1,4 +1,5 @@
 *.exe
 *.pdb
+piotr
 .build
 deploy
