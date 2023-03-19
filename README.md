@@ -28,4 +28,5 @@ You can get a released version of **Piotr Pushowski and the Crates** from https:
 &nbsp;
 
 ![Alt text](/publish/ss1.png?raw=true "Screenshot 1")
+&nbsp;
 ![Alt text](/publish/ss2.png?raw=true "Screenshot 2")
