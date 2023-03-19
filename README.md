@@ -9,12 +9,12 @@ This game was made in the up and coming programming language **Jai** (working ti
 This is the first known game to be published in the Jai language!
 
 ## Build
-```console
+```sh
 jai src/build.jai
 ```
 
 or use the provided scripts
-```console
+```sh
 release.bat # Windows release
 release.sh # Linux release
 debug.bat # Windows debug
