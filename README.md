@@ -21,6 +21,10 @@ debug.bat # Windows debug
 debug.sh # Linux debug
 ```
 
+## Play
+You can get a released version of **Piotr Pushowski and the Crates** from https://badcastle.itch.io/piotr-pushowski
+
+&nbsp;
 &nbsp;
 
 ![Alt text](/publish/ss1.png?raw=true "Screenshot 1")
