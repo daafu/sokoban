@@ -257,6 +257,7 @@ assets_init :: () {
 
 #scope_file
 
+// This function is extracted from Simp module which current doesn't expose shader compilation
 get_shader_program :: (shader_text: string) -> GLuint {
     LOG_BUFFER_SIZE :: 512;
     
