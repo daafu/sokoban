@@ -91,8 +91,6 @@ camera_reset :: () {
     camera_y = 0;
 }
 
-
-
 #scope_file
 draw_text_internal :: (font : *SpriteFont, draw_pos : Vector2i, color : Vector4, text: string, measure_only: bool) -> int, int {
     pos := draw_pos;

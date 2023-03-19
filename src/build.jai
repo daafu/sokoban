@@ -1,11 +1,3 @@
-#if OS == .MACOS {
-    
-}
-
-#if OS == .LINUX {
-    
-}
-
 #if OS == .WINDOWS {
     #import "Windows_Resources";
 }
@@ -21,7 +13,6 @@
 #load "draw.jai";
 #load "ease.jai";
 #load "audio.jai";
-#load "util.jai";
 #load "gamepad.jai";
 #load "scene_game.jai";
 #load "scene_title.jai";

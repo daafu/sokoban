@@ -50,15 +50,6 @@ input_handle_keyboard_event :: (ev: Event) {
             update_button(.CANCEL, xx ev.key_pressed); // reusing ESCAPE
         }
     }
-/*
-                if key == .ARROW_LEFT   key_left  = event.key_pressed;
-                if key == .ARROW_RIGHT  key_right = event.key_pressed;
-                if key == .ARROW_DOWN   key_down  = event.key_pressed;
-                if key == .ARROW_UP     key_up    = event.key_pressed;
-
-                if key == .SHIFT        if event.key_pressed maybe_fire_bullets();
-                */
-
 }
 
 input_handle_gamepad :: () {
@@ -87,12 +78,6 @@ input_handle_gamepad :: () {
     if gamepad_get_button(.OPTIONS) update_button(.ESCAPE, true);
     if gamepad_get_button(.START) update_button(.ESCAPE, true);
     if gamepad_get_button(.BACK) update_button(.ESCAPE, true);
-
-    /*
-    if gamepad.left_stick.x < 0.2 {
-        //button_pressed[cast (int) Button.LEFT] = true;
-    }
-    */
 }
 
 input_frame_end :: () {
@@ -149,7 +134,6 @@ update_button :: (btn : Button, pressed: bool) {
 
     if pressed && !button_was_pressed[cast(int)btn].pressed {
         button_pressed[cast(int)btn].frame = frame_count;
-        // print("Button % frame %\n", btn, frame_count);
     }
     else if !pressed && button_was_pressed[cast(int)btn].pressed {
         button_pressed[cast(int)btn].frame = 0;

@@ -143,14 +143,12 @@ game_load :: () {
                 }
             }
             else {
-                // TODO Version conversion
+                // TODO Saved game version conversion
             }
 
             file_close(*fp);
         }
     }
-
-    //file_read :: (f: File, vdata: *void, bytes_to_read: s64) -> (success: bool, bytes_read: s64) {
 }
 
 main :: () {
@@ -210,8 +208,6 @@ main :: () {
                 
                 window_width  = it.width;
                 window_height = it.height;
-
-//                if should_reinit my_init_fonts();
             }
         }
         
@@ -349,7 +345,6 @@ scene_fade :: () {
         draw_sprite(.FADE_SOLID, .{xx (x_offset + x_stagger + 16), xx y_offset, xx (game_width * 1.75), 16}, fade_color);
         y_offset += 16;
         x_offset += 16;
-        //x_stagger += 16;
     }    
 }
 

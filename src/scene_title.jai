@@ -113,7 +113,7 @@ scene_title_render :: () {
     }
 
     // Title Text
-    t = util_part_progress(reveal, 0.5, 0.7);
+    t = ease_range_map(reveal, 0.5, 0.7);
     t = ease_interp(.BOUNCE_IN, 0.0, 1.0, (1 - t));
     offset = xx (t * (-110));
 
@@ -121,7 +121,7 @@ scene_title_render :: () {
     draw_copy(*sprite_title_text2, Vector2i.{48, xx (64 + offset)}, Vector4.{1, 1, 1, 1});
 
     // Art
-    t = util_part_progress(reveal, 0, 0.4);
+    t = ease_range_map(reveal, 0, 0.4);
     t = ease_interp(.EXPO_IN, 0.0, 1.0, (1 - t));
     offset = xx (t * (-game_width));
 

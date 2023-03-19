@@ -1,7 +1,6 @@
 #import "Basic"; //()(MEMORY_DEBUGGER=true);
 #import "Math";
 
-
 EaseFunc :: enum u8 {
     LINEAR;
     SINE_IN;
@@ -108,6 +107,17 @@ ease_interp :: (func : EaseFunc, start: Vector2, end: Vector2, t: float) -> Vect
 {
     t = value(func, t);
     return Vector2.{start.x + ((end.x - start.x) * t), start.y + ((end.y - start.y) * t)};
+}
+
+// Map t so that:
+// t < min = 0
+// t > max = 1
+// min < t < max = mapped to 0..1
+ease_range_map :: (t: float, min: float, max: float) -> float {
+    if t < min return 0;
+    if t > max return 1;
+
+    return (t - min) / (max - min);
 }
 
 #scope_file

@@ -337,7 +337,7 @@ in vec2 vert_uv0;
 uniform mat4 projection;
 
 void main() {
-    TexCoords = vec2(vert_uv0.x, 1-vert_uv0.y);  // @Cleanup: Figure out what to do to avoid this vertical flip... sigh!
+    TexCoords = vec2(vert_uv0.x, 1-vert_uv0.y);
     gl_Position = projection * vec4(vert_position.xy, 0.0, 1.0);
     iterated_color = vert_color;
 }
@@ -366,7 +366,7 @@ void main () {
 
     uv = uv + delta * delta_offset;
 
-    /* Here we sample neighbouring pixels to get some pixel smoothing when the RetroBlit.DisplaySize
+    /* Here we sample neighbouring pixels to get some pixel smoothing when display size
     doesn't divide evenly into the native window resolution. */
     vec2 pixelSize = vec2(1.0 / texture0Size.x, 1.0 / texture0Size.y);
     pixelSize *= sampleFactor;
@@ -393,7 +393,7 @@ void main () {
 
     vec4 texelColor = (leftColor + rightColor + topColor + bottomColor) / 4.0;
 
-    vec4 color = texelColor * iterated_color;// * colDiffuse; * fragColor;
+    vec4 color = texelColor * iterated_color;
 
     // Saturate
     float saturation = 0.15;

@@ -1,4 +1,0 @@
-TODO:
-NAAAH - Do a level select screen instead of new/continue. Can make it in game, walk around and select levels
-Need swish sounds for scene transitions
-Key repeat
