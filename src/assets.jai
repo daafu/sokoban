@@ -2,16 +2,19 @@
 #import "Simp";
 #import "GL";
 
+CELL_WIDTH :: 16;
+CELL_HEIGHT :: 16;
+
 // https://lospec.com/palette-list/purplemorning8
-pal : [8] Vector4 : Vector4.[
-    Vector4.{12 / 255.0, 7 / 255.0, 40 / 255.0, 1},         // 0
-    Vector4.{28 / 255.0, 23 / 255.0, 68 / 255.0, 1},        // 1
-    Vector4.{44 / 255.0, 50 / 255.0, 87 / 255.0, 1},        // 2
-    Vector4.{89 / 255.0, 76 / 255.0, 106 / 255.0, 1},       // 3
-    Vector4.{160 / 255.0, 91 / 255.0, 118 / 255.0, 1},      // 4
-    Vector4.{215 / 255.0, 118 / 255.0, 107 / 255.0, 1},     // 5
-    Vector4.{225 / 255.0, 178 / 255.0, 140 / 255.0, 1},     // 6
-    Vector4.{222 / 255.0, 231 / 255.0, 173 / 255.0, 1},     // 7
+pal : [8] Colorf : Colorf.[
+    Colorf.{12 / 255.0, 7 / 255.0, 40 / 255.0, 1},         // 0
+    Colorf.{28 / 255.0, 23 / 255.0, 68 / 255.0, 1},        // 1
+    Colorf.{44 / 255.0, 50 / 255.0, 87 / 255.0, 1},        // 2
+    Colorf.{89 / 255.0, 76 / 255.0, 106 / 255.0, 1},       // 3
+    Colorf.{160 / 255.0, 91 / 255.0, 118 / 255.0, 1},      // 4
+    Colorf.{215 / 255.0, 118 / 255.0, 107 / 255.0, 1},     // 5
+    Colorf.{225 / 255.0, 178 / 255.0, 140 / 255.0, 1},     // 6
+    Colorf.{222 / 255.0, 231 / 255.0, 173 / 255.0, 1},     // 7
     ];
 
 SpriteType :: enum u8 {
@@ -40,11 +43,6 @@ SpriteType :: enum u8 {
     GRASS10;
 }
 
-SpriteIndex :: struct {
-    x : u16;
-    y : u16;
-}
-
 Rect :: struct {
     x: s32;
     y: s32;
@@ -57,36 +55,27 @@ Vector2i :: struct {
     y: s32;
 }
 
-SpriteFont :: struct {
-    first_char : u8;
-    glyph_width : int;
-    glyph_height : int;
-    spacing_x : int;
-    spacing_y : int;
-    space_width: int;
-    glyphs: [..] Rect;    
-}
+sprite_pack : *Asset;
+logo : *Asset;
 
-sprites : [64] SpriteIndex;
-sprite_fill_corners : [16] SpriteIndex;
-sprite_fill_sides : [16] SpriteIndex;
-sprite_title_art : Rect;
-sprite_title_text1 : Rect;
-sprite_title_text2 : Rect;
-sprite_slider_tag : Rect;
-sprite_slider_bar : Rect;
-sprite_checkbox_off : Rect;
-sprite_checkbox_on : Rect;
+sprites : [64] PackedSprite;
+sprite_fill_corners : [16] PackedSprite;
+sprite_fill_sides : [16] PackedSprite;
+sprite_title_art : PackedSprite;
+sprite_title_text1 : PackedSprite;
+sprite_title_text2 : PackedSprite;
+sprite_slider_tag : PackedSprite;
+sprite_slider_bar : PackedSprite;
+sprite_checkbox_off : PackedSprite;
+sprite_checkbox_on : PackedSprite;
+
+sprite_help1 : PackedSprite;
+sprite_help2 : PackedSprite;
 
 sprite_logo : Rect;
 
-sprite_help1 : Rect;
-sprite_help2 : Rect;
+font_expire : *Asset;
 
-font_expire : SpriteFont;
-
-arts : Simp.Texture;
-logo : Simp.Texture;
 
 sound_step : *Mixer_Sound_Data;
 sound_push : *Mixer_Sound_Data;
@@ -100,144 +89,96 @@ sound_scene_swish : *Mixer_Sound_Data;
 sound_drawer_open : *Mixer_Sound_Data;
 sound_drawer_snap : *Mixer_Sound_Data;
 
-shader_present : Shader;
+shader_present : *Asset;
 
-sprite_get_index :: (spr :SpriteType) -> SpriteIndex {
-    si : SpriteIndex = sprites[cast (int) spr];
+sprite_get_index :: (spr :SpriteType) -> PackedSprite {
+    si : PackedSprite = sprites[cast (int) spr];
     return si;
 }
 
-set_sprite :: (type : SpriteType, cx: int, cy: int) {
-    sprites[cast (int) type].x = xx cx;
-    sprites[cast (int) type].y = xx cy;
-}
-
-set_font :: (font : *SpriteFont, first_char: u8, last_char: u8, pos: Vector2i, col: int, glyph_width: int, glyph_height: int, spacing_x: int, spacing_y: int, space_width: int) {
-    if font == null then return;
-
-    font.first_char = first_char;
-    font.glyph_width = glyph_width;
-    font.glyph_height = glyph_height;
-    font.spacing_x = spacing_x;
-    font.spacing_y = spacing_y;
-    font.space_width = space_width;
-    
-    char_count := cast(int) last_char - cast(int)first_char + 1;
-
-    array_reset(*font.glyphs);
-
-    glyph_x := pos.x;
-    glyph_y := pos.y;
-    glyph_col := 0;
-
-    for i: 0..(char_count - 1) {
-        if i != 0 && i % col == 0 {
-            glyph_x = pos.x;
-            glyph_y += xx glyph_height;
-        }
-
-        glyph_rect : Rect;
-        glyph_rect.x = glyph_x;
-        glyph_rect.y = glyph_y;
-        glyph_rect.width = xx glyph_width;
-        glyph_rect.height = xx glyph_height;
-
-        array_add(*font.glyphs, glyph_rect);
-
-        glyph_x += xx glyph_width;
-    }
+set_sprite :: (type : SpriteType, name: string) {
+    sprites[cast (int) type] = asset_get_sprite(sprite_pack, name.data);
 }
 
 assets_init :: () {
-    Simp.texture_load_from_file(*arts, "res/arts.png");
-    Simp.texture_load_from_file(*logo, "res/logo_trans.png");
+    logo = asset_load("images/logo_trans.png");
+    sprite_pack = asset_load("spritepack/spritepack.sp");
 
-    set_sprite(.NONE, U16_MAX, U16_MAX);
+    set_sprite(.WALL, "wall_top.png");
+    set_sprite(.WALL_EDGE, "wall_side.png");
+    set_sprite(.GROUND, "ground.png");
+    set_sprite(.PLAYER, "player_0.png");
+    set_sprite(.CRATE, "crate.png");
+    set_sprite(.CRATE_SLOT, "crate_slot.png");
+    set_sprite(.DOOR_CLOSED, "door_closed.png");
+    set_sprite(.DOOR_OPEN, "door_open.png");
 
-    set_sprite(.WALL, 0, 0);
-    set_sprite(.WALL_EDGE, 0, 1);
-    set_sprite(.GROUND, 0, 10);
-    set_sprite(.PLAYER, 1, 0);
-    set_sprite(.CRATE, 2, 0);
-    set_sprite(.CRATE_SLOT, 3, 0);
-    set_sprite(.DOOR_CLOSED, 0, 2);
-    set_sprite(.DOOR_OPEN, 0, 3);
+    set_sprite(.UI_HAND, "ui_hand.png");
+    set_sprite(.FADE_IN_SLANT, "transition_angle_0.png");
+    set_sprite(.FADE_SOLID, "transition_fill.png");
+    set_sprite(.FADE_OUT_SLANT, "transition_angle_1.png");
 
-    set_sprite(.UI_HAND, 16, 6);
-    set_sprite(.FADE_IN_SLANT, 17, 6);
-    set_sprite(.FADE_SOLID, 18, 6);
-    set_sprite(.FADE_OUT_SLANT, 19, 6);
+    set_sprite(.GRASS1, "grass_0.png");
+    set_sprite(.GRASS2, "grass_1.png");
+    set_sprite(.GRASS3, "grass_2.png");
+    set_sprite(.GRASS4, "grass_3.png");
+    set_sprite(.GRASS5, "grass_4.png");
+    set_sprite(.GRASS6, "grass_5.png");
+    set_sprite(.GRASS7, "grass_6.png");
+    set_sprite(.GRASS8, "grass_7.png");
+    set_sprite(.GRASS9, "grass_8.png");
+    set_sprite(.GRASS10, "grass_9.png");
 
-    set_sprite(.GRASS1, 4, 0);
-    set_sprite(.GRASS2, 5, 0);
-    set_sprite(.GRASS3, 6, 0);
-    set_sprite(.GRASS4, 7, 0);
-    set_sprite(.GRASS5, 8, 0);
-    set_sprite(.GRASS6, 9, 0);
-    set_sprite(.GRASS7, 10, 0);
-    set_sprite(.GRASS8, 11, 0);
-    set_sprite(.GRASS9, 12, 0);
-    set_sprite(.GRASS10, 13, 0);
+    sprite_fill_corners[0b0000] = asset_get_sprite(sprite_pack, "fill_corner_0.png");
+    sprite_fill_corners[0b0001] = asset_get_sprite(sprite_pack, "fill_corner_1.png");
+    sprite_fill_corners[0b0010] = asset_get_sprite(sprite_pack, "fill_corner_2.png");
+    sprite_fill_corners[0b0011] = asset_get_sprite(sprite_pack, "fill_corner_3.png");
+    sprite_fill_corners[0b0100] = asset_get_sprite(sprite_pack, "fill_corner_4.png");
+    sprite_fill_corners[0b0101] = asset_get_sprite(sprite_pack, "fill_corner_5.png");
+    sprite_fill_corners[0b0110] = asset_get_sprite(sprite_pack, "fill_corner_6.png");
+    sprite_fill_corners[0b0111] = asset_get_sprite(sprite_pack, "fill_corner_7.png");
+    sprite_fill_corners[0b1000] = asset_get_sprite(sprite_pack, "fill_corner_8.png");
+    sprite_fill_corners[0b1001] = asset_get_sprite(sprite_pack, "fill_corner_9.png");
+    sprite_fill_corners[0b1010] = asset_get_sprite(sprite_pack, "fill_corner_10.png");
+    sprite_fill_corners[0b1011] = asset_get_sprite(sprite_pack, "fill_corner_11.png");
+    sprite_fill_corners[0b1100] = asset_get_sprite(sprite_pack, "fill_corner_12.png");
+    sprite_fill_corners[0b1101] = asset_get_sprite(sprite_pack, "fill_corner_13.png");
+    sprite_fill_corners[0b1110] = asset_get_sprite(sprite_pack, "fill_corner_14.png");
+    sprite_fill_corners[0b1111] = asset_get_sprite(sprite_pack, "fill_corner_15.png");
 
-    for v, i : sprite_fill_corners {
-        sprite_fill_corners[i].x = 0;
-        sprite_fill_corners[i].y = 6;
-    }
+    sprite_fill_sides[0b0000] = asset_get_sprite(sprite_pack, "fill_side_0.png");
+    sprite_fill_sides[0b0001] = asset_get_sprite(sprite_pack, "fill_side_1.png");
+    sprite_fill_sides[0b0010] = asset_get_sprite(sprite_pack, "fill_side_2.png");
+    sprite_fill_sides[0b0011] = asset_get_sprite(sprite_pack, "fill_side_3.png");
+    sprite_fill_sides[0b0100] = asset_get_sprite(sprite_pack, "fill_side_4.png");
+    sprite_fill_sides[0b0101] = asset_get_sprite(sprite_pack, "fill_side_5.png");
+    sprite_fill_sides[0b0110] = asset_get_sprite(sprite_pack, "fill_side_6.png");
+    sprite_fill_sides[0b0111] = asset_get_sprite(sprite_pack, "fill_side_7.png");
+    sprite_fill_sides[0b1000] = asset_get_sprite(sprite_pack, "fill_side_8.png");
+    sprite_fill_sides[0b1001] = asset_get_sprite(sprite_pack, "fill_side_9.png");
+    sprite_fill_sides[0b1010] = asset_get_sprite(sprite_pack, "fill_side_10.png");
+    sprite_fill_sides[0b1011] = asset_get_sprite(sprite_pack, "fill_side_11.png");
+    sprite_fill_sides[0b1100] = asset_get_sprite(sprite_pack, "fill_side_12.png");
+    sprite_fill_sides[0b1101] = asset_get_sprite(sprite_pack, "fill_side_13.png");
+    sprite_fill_sides[0b1110] = asset_get_sprite(sprite_pack, "fill_side_14.png");
+    sprite_fill_sides[0b1111] = asset_get_sprite(sprite_pack, "fill_side_15.png");
 
-    for v, i : sprite_fill_sides {
-        sprite_fill_sides[i].x = 0;
-        sprite_fill_sides[i].y = 7;
-    }
+    sprite_title_art = asset_get_sprite(sprite_pack, "ui_tilte_art.png");
+    sprite_title_text1 = asset_get_sprite(sprite_pack, "ui_title_0.png");
+    sprite_title_text2 = asset_get_sprite(sprite_pack, "ui_title_1.png");
 
-    sprite_fill_corners[0b0000].x = 0;
-    sprite_fill_corners[0b0001].x = 1;
-    sprite_fill_corners[0b0010].x = 2;
-    sprite_fill_corners[0b0011].x = 3;
-    sprite_fill_corners[0b0100].x = 4;
-    sprite_fill_corners[0b0101].x = 5;
-    sprite_fill_corners[0b0110].x = 6;
-    sprite_fill_corners[0b0111].x = 7;
-    sprite_fill_corners[0b1000].x = 8;
-    sprite_fill_corners[0b1001].x = 9;
-    sprite_fill_corners[0b1010].x = 10;
-    sprite_fill_corners[0b1011].x = 11;
-    sprite_fill_corners[0b1100].x = 12;
-    sprite_fill_corners[0b1101].x = 13;
-    sprite_fill_corners[0b1110].x = 14;
-    sprite_fill_corners[0b1111].x = 15;
+    sprite_slider_tag = asset_get_sprite(sprite_pack, "ui_slider_handle.png");
+    sprite_slider_bar = asset_get_sprite(sprite_pack, "ui_slider.png");
+    sprite_checkbox_off = asset_get_sprite(sprite_pack, "ui_unchecked.png");
+    sprite_checkbox_on = asset_get_sprite(sprite_pack, "ui_checked.png");
 
-    sprite_fill_sides[0b0000].x = 0;
-    sprite_fill_sides[0b0001].x = 1;
-    sprite_fill_sides[0b0010].x = 2;
-    sprite_fill_sides[0b0011].x = 3;
-    sprite_fill_sides[0b0100].x = 4;
-    sprite_fill_sides[0b0101].x = 5;
-    sprite_fill_sides[0b0110].x = 6;
-    sprite_fill_sides[0b0111].x = 7;
-    sprite_fill_sides[0b1000].x = 8;
-    sprite_fill_sides[0b1001].x = 9;
-    sprite_fill_sides[0b1010].x = 10;
-    sprite_fill_sides[0b1011].x = 11;
-    sprite_fill_sides[0b1100].x = 12;
-    sprite_fill_sides[0b1101].x = 13;
-    sprite_fill_sides[0b1110].x = 14;
-    sprite_fill_sides[0b1111].x = 15;
-
-    sprite_title_art = Rect.{0, 140, 463, 338};
-    sprite_title_text1 = Rect.{236, 0, 276, 56};
-    sprite_title_text2 = Rect.{306, 56, 206, 38};
-
-    sprite_slider_tag = Rect.{256, 116, 5, 8};
-    sprite_slider_bar = Rect.{262, 116, 23, 8};
-    sprite_checkbox_off = Rect.{288, 115, 10, 10};
-    sprite_checkbox_on = Rect.{304, 115, 10, 10};
-
-    sprite_help1 = Rect.{320, 96, 44, 13};
-    sprite_help2 = Rect.{320, 112, 55, 15};
+    sprite_help1 = asset_get_sprite(sprite_pack, "help_rules.png");
+    sprite_help2 = asset_get_sprite(sprite_pack, "help_reset.png");
 
     sprite_logo = Rect.{0, 0, 1024, 1024};
 
-    set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
+    font_expire = null;
+    //set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
 
     sound_step = audio_load("res/footstep.wav");
     sound_push = audio_load("res/push.wav");
@@ -251,8 +192,8 @@ assets_init :: () {
     sound_drawer_open = audio_load("res/drawer_open.wav");
     sound_drawer_snap = audio_load("res/drawer_snap.wav");
 
-    shader_present.gl_handle   = get_shader_program(SHADER_PRESENT);
-    shader_present.alpha_blend = false;
+//    shader_present.gl_handle   = get_shader_program(SHADER_PRESENT);
+//    shader_present.alpha_blend = false;
 }
 
 #scope_file
@@ -260,7 +201,7 @@ assets_init :: () {
 // This function is extracted from Simp module which current doesn't expose shader compilation
 get_shader_program :: (shader_text: string) -> GLuint {
     LOG_BUFFER_SIZE :: 512;
-    
+
     make_shader_object :: (shader: string, prefix: string, shader_type : GLenum) -> GLuint {
         shader_object := glCreateShader(shader_type);
 
@@ -301,7 +242,7 @@ get_shader_program :: (shader_text: string) -> GLuint {
     #define FRAGMENT_SHADER
     #define OUT_IN in
     END
-    
+
     shader_v := make_shader_object(shader_text, PREFIX_V, GL_VERTEX_SHADER);
     shader_f := make_shader_object(shader_text, PREFIX_F, GL_FRAGMENT_SHADER);
     shader_p := glCreateProgram();
@@ -318,7 +259,7 @@ get_shader_program :: (shader_text: string) -> GLuint {
         glGetProgramInfoLog(shader_p, log_data.count, null, log_data.data);
         log("%", to_string(log_data.data), flags=.ERROR);
         return 0;
-    } 
+    }
 
     glDeleteShader(shader_v);
     glDeleteShader(shader_f);
@@ -410,9 +351,9 @@ void main () {
 
     float scanlineIntensity = 0.5;
     float scanFade = 1.0 - ((scanWave) * scanlineIntensity * (1.0 - pixelLuminance));
-    
+
     color *= scanFade;
-    
+
     out_color = color;
 }
 #endif // FRAGMENT_SHADER

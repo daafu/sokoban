@@ -42,7 +42,6 @@ button_mapping : [12] SDL_GameControllerButton = .[
 
 #scope_module
 gamepad_init :: () {
-    SDL_Init(SDL_INIT_GAMECONTROLLER);
     gamepad_check_connected();
 }
 

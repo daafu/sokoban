@@ -1,17 +1,19 @@
 #import "Basic"; //()(MEMORY_DEBUGGER=true);
 
 Player :: struct {
-    #as using base: Entity; 
+    #as using base: Entity;
     base.type = .PLAYER;
     base.spr = .PLAYER;
     base.color = 7;
-    base.flags = xx EntityFlags.PUSHER;    
+    base.flags = xx EntityFlags.PUSHER;
 }
 
 player_draw :: (e: Entity, yoffset: int) {
     si := sprite_get_index(e.spr);
-    si.y = xx ((cast(int)(get_time() * 4)) % 2);
-    draw_sprite(si, .{xx (e.vx * CELL_WIDTH + 0.5), xx ((e.vy * CELL_HEIGHT + 0.5) + yoffset)}, pal[e.color]);
+//    si.y = xx ((cast(int)(get_time() * 4)) % 2);
+//draw_sprite_pos :: (sprite: PackedSprite, repeat: Vec2f, dest: Vec2f, color: Colorf, flags: s32) #foreign pxl;
+    repeat: Vec2f = .{1, 1};
+    draw_sprite_pos(si, repeat, .{xx (e.vx * CELL_WIDTH + 0.5), xx ((e.vy * CELL_HEIGHT + 0.5) + yoffset)}, pal[e.color], 0);
 }
 
 player_update :: (p : *Player) {

@@ -69,16 +69,18 @@ map_init :: () {
 }
 
 map_draw :: () {
-    draw_copy(sprite_help2, .{ xx (game_width - 60), xx (4)}, pal[3]);
+    draw_sprite(sprite_help2, .{ xx (game_width - 60), xx (4)}, pal[3]);
 
     // Draw level
     if reveal > 0.75 {
         t := (reveal - 0.75) / 0.25;
-        draw_text(*font_expire, .{xx (game_width / 2 - 24), xx (game_height - (20 * ease_interp(.BACK_OUT, 0.0, 1.0, t) - 8))}, pal[3], tprint("Level %", (current_level + 1)));
+        draw_pixel_text(font_expire, tprint("Level %", (current_level + 1)), .{xx (game_width / 2 - 24), xx (game_height - (20 * ease_interp(.BACK_OUT, 0.0, 1.0, t) - 8))}, pal[3]);
+
+        draw_pixel_text(font_expire, tprint("pxl_get_platform returns %\n", pxl_get_platform()), .{xx (game_width / 2 - 24), xx (game_height - (20 * ease_interp(.BACK_OUT, 0.0, 1.0, t) - 8) - 20)}, pal[3]);
     }
 
 
-    camera_set((game_width / 2) - (map_width * CELL_WIDTH) / 2, (game_height / 2) - (map_height * CELL_HEIGHT) / 2);
+    //camera_set((game_width / 2) - (map_width * CELL_WIDTH) / 2, (game_height / 2) - (map_height * CELL_HEIGHT) / 2);
 
     i := 0;
     xoffset := 0;
@@ -97,7 +99,7 @@ map_draw :: () {
 
     // Draw fill first, could merge this into the loop above but lets keep it nice and seperate for now
     for y: 0..map_height - 1 {
-        for x: 0..map_width - 1 {                        
+        for x: 0..map_width - 1 {
             draw_sprite(sprite_fill_corners[map_tiles[i].fill_corners], .{xx ((x * CELL_WIDTH) + xoffset), xx ((y * CELL_HEIGHT))}, pal[1]);
             draw_sprite(sprite_fill_sides[map_tiles[i].fill_sides], .{xx ((x * CELL_WIDTH) + xoffset), xx ((y * CELL_HEIGHT))}, pal[1]);
 
@@ -112,12 +114,12 @@ map_draw :: () {
 
         ycenter -= 5;
         xcenter -= 30;
-        draw_copy(sprite_help1, .{ xx (xcenter + xoffset + 6), xx (ycenter)}, pal[3]);
+        draw_sprite(sprite_help1, .{ xx (xcenter + xoffset + 6), xx (ycenter)}, pal[3]);
     }
 
     i = 0;
     for y: 0..map_height - 1 {
-        for x: 0..map_width - 1 {            
+        for x: 0..map_width - 1 {
             if reveal_map < 1.0 {
                 t := ease_interp(.BOUNCE_OUT, 0.0, 1.0, reveal_map + (x / 150.0) + (y / 150) + (rand_vals[i] * 0.025));
 
@@ -125,7 +127,7 @@ map_draw :: () {
                 yoffset = xx -((1.0 - t) * (game_height * 1.5));
             }
 
-            draw_sprite(map_tiles[i].spr, .{xx (x * CELL_WIDTH), xx ((y * CELL_HEIGHT) + yoffset)}, pal[map_tiles[i].color]);
+            draw_sprite(sprites[map_tiles[i].spr], .{xx (x * CELL_WIDTH), xx ((y * CELL_HEIGHT) + yoffset)}, pal[map_tiles[i].color]);
 
             i += 1;
         }
@@ -142,7 +144,7 @@ map_draw :: () {
         }
     }
 
-    camera_reset();
+    //camera_reset();
 }
 
 map_load :: (level: int) {
@@ -164,7 +166,7 @@ map_load :: (level: int) {
     door_pos = .{-1, -1};
 
     // Some default tile values
-    for value, i : map_tiles {        
+    for value, i : map_tiles {
         map_tiles[i].spr = SpriteType.NONE;
         map_tiles[i].flags = .OUT_OF_BOUNDS;
     }
@@ -177,7 +179,7 @@ map_load :: (level: int) {
 
     // First pass just measure dimensions
     for 0..level_str.count - 1 {
-        if level_str[it] == #char "\n" {            
+        if level_str[it] == #char "\n" {
             if map_width < x then map_width = x;
             map_height += 1;
             x = 0;
@@ -212,7 +214,7 @@ map_load :: (level: int) {
                 case #char "#"; // Wall
                     spr = .WALL;
                     flags = xx TileFlag.BLOCKING;
-                    color = 3;                    
+                    color = 3;
                 case #char "."; // Ground
                     spr = .GROUND;
                     flags = .NONE;
@@ -351,14 +353,14 @@ map_move_entity :: (e: *Entity, dx: int, dy: int) -> bool {
     return true;
 }
 
-map_update :: () {    
+map_update :: () {
     reveal_speed := 0.55;
 
     if resetting {
         reveal -= reveal_speed * time_delta;
         if reveal < 0 {
             resetting = false;
-            reveal = 0;            
+            reveal = 0;
             map_load(current_level);
         }
 
@@ -393,7 +395,7 @@ map_update :: () {
         if door_pos.x != -1 {
             i := door_pos.x + door_pos.y * map_width;
             if map_tiles[i].spr == .DOOR_OPEN {
-                audio_play_sound(sound_door_close, true);                
+                audio_play_sound(sound_door_close, true);
             }
 
             map_tiles[i].spr = .DOOR_CLOSED;
@@ -407,7 +409,7 @@ map_update :: () {
         if door_pos.x != -1 {
             i := door_pos.x + door_pos.y * map_width;
             if map_tiles[i].spr == .DOOR_CLOSED {
-                audio_play_sound(sound_door_open, true);                
+                audio_play_sound(sound_door_open, true);
             }
 
             map_tiles[i].spr = .DOOR_OPEN;

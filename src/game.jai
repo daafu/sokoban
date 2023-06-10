@@ -29,7 +29,7 @@ SceneType :: enum u8 {
 game_width : s32;
 game_height : s32;
 
-window_width : s32 = 1280; 
+window_width : s32 = 1280;
 window_height : s32 = 720;
 
 time_delta : float;
@@ -53,7 +53,7 @@ prev_window_info : Saved_Window_Info;
 
 window : Window_Type;
 
-pixel_surf : Simp.Texture;
+pixel_surf : *Asset;
 
 last_time : float64;
 
@@ -96,10 +96,19 @@ game_quit :: () {
 }
 
 game_toggle_fullscreen :: (fullscreen: bool) {
-    fullscreen_success, window_width, window_height := toggle_fullscreen(window, fullscreen, *prev_window_info);
+    if fullscreen {
+        window_set_fullscreen(.fullscreen_borderless);
+    }
+    else {
+        window_set_fullscreen(.windowed);
+    }
+
+    window_get_size(xx *window_width, xx *window_height);
 }
 
 game_save :: () {
+    filename := "saved_game.dat";
+
     data := SavedGame.{
         SAVE_VERSION,
         1280,
@@ -113,31 +122,21 @@ game_save :: () {
     options_save(*data);
     map_save(*data);
 
-    // Create path incase it doesn't exist
-    make_directory_if_it_does_not_exist(save_game_path, false);
-
-    fp, success := file_open(save_game_file, true, false, false);
-    if success {
-        success = file_write(*fp, xx *data, xx size_of(SavedGame));
-        file_close(*fp);
-    }
+    record_write(filename.data, 0, xx *data, xx size_of(SavedGame), null);
 }
 
 game_load :: () {
     data : SavedGame;
 
-    fp, success := file_open(save_game_file, false, false, false);
-    if success {
+    filename := "saved_game.dat";
+
+    if record_exits(filename.data) {
         // Read out version first
         version : u32 = 0;
-        success = file_read(*fp, xx *version, xx size_of(type_of(version)));
-        if (success) {
-            file_seek(fp, 0, .START);
 
+        if .success == record_read(filename.data, 0, xx *version, xx size_of(type_of(version)), null) {
             if version == SAVE_VERSION {
-                success, bytes_read := file_read(*fp, xx *data, size_of(SavedGame));
-
-                if (success) {
+                if .success == record_read(filename.data, 0, xx *data, xx size_of(SavedGame), null) {
                     options_load(*data);
                     map_load(*data);
                 }
@@ -145,56 +144,74 @@ game_load :: () {
             else {
                 // TODO Saved game version conversion
             }
-
-            file_close(*fp);
         }
     }
 }
 
+init :: () -> Result #c_call {
+    new_context: Context;
+    push_context new_context {
+        print("init\n");
+
+        window_set_res(1280, 720, true);
+        window_set_title("Piotr Pushowski and the Crates");
+
+        game_load();
+
+        if (options_get_fullscreen()) {
+            game_toggle_fullscreen(true);
+        }
+
+        init();
+        game_set_scene(.SPLASH);
+
+        time_prev = get_time();
+
+        audio_update();
+    }
+
+    return .success;
+}
+
+deinit :: () #c_call {
+    new_context: Context;
+    push_context new_context {
+        print("deinit\n");
+    }
+}
+
+update :: () #c_call {
+    new_context: Context;
+    push_context new_context {
+       // print("update\n");
+    }
+}
+
+render :: () #c_call {
+    new_context: Context;
+    push_context new_context {
+     //   print("render\n");
+    }
+}
+
+
+
+
+
+
 main :: () {
-    last_time = get_time();
+    callbacks := PxlCallbacks.{
+        init,
+        deinit,
+        update,
+        render
+    };
 
-    sdl_version : SDL_version;
-    SDL_GetVersion(*sdl_version);
-    print("Using SDL %.%.%\n", sdl_version.major, sdl_version.minor, sdl_version.patch);
-
-    #if OS == .WINDOWS {
-        save_game_path = sprint("%/Piotr", get_path_os_saved_games());
-    }
-    
-    #if OS == .LINUX {
-        libc :: #system_library "libc";
-        getenv :: (env_var: *u8) -> *u8 #foreign libc;
-        home_path := to_string(getenv("HOME"));
-        save_game_path = sprint("%/Documents/Piotr", home_path);
-    }
-
-    replace_chars(save_game_path, "\\", #char "/");
-    save_game_file = sprint("%/saved_game.dat", save_game_path);
-
-    game_load();
-
-    width  := window_width;
-    height := window_height;
-
-    window = create_window(window_name="Piotr Pushowski and the Crates", width=window_width, height=window_height, background_color_rgb = .[12 / 255.0, 7 / 255.0, 40 / 255.0]);
-
-    if (options_get_fullscreen()) {
-        game_toggle_fullscreen(true);
-    }
-    
-    Simp.set_render_target(window);
-
-    init();
-    game_set_scene(.SPLASH);
-    
-    time_prev = get_time();
-
-    audio_update();
-
+    pxl_entry("BadCastle", "Piotr", callbacks, 0, null);
+/*
     while !should_quit_game {
         reset_temporary_storage();
-        
+
         update_window_events();
         gamepad_update();
 
@@ -205,12 +222,12 @@ main :: () {
             Simp.update_window(it.window);
             if it.window == window {
                 should_reinit := (it.width != window_width) || (it.height != window_height);
-                
+
                 window_width  = it.width;
                 window_height = it.height;
             }
         }
-        
+
         for event : events_this_frame {
             if event.type == {
                 case .QUIT; {
@@ -220,47 +237,51 @@ main :: () {
 
                 case .KEYBOARD; {
                     input_handle_keyboard_event(event);
-                }   
+                }
             }
-        }        
+        }
 
         input_handle_gamepad();
 
         time_current := get_time();
         time_delta = xx (time_current - time_prev);
-        time_prev = time_current; 
+        time_prev = time_current;
 
         update();
         render();
-        
+
         input_frame_end();
 
         Simp.swap_buffers(window);
 
         frame_count += 1;
     }
+    */
 }
 
 #scope_file
 
 render :: () {
-    border_color := Vector4.{8 / 255.0, 8 / 255.0, 8 / 255.0, 1};
+    border_color := Colorf.{8 / 255.0, 8 / 255.0, 8 / 255.0, 1};
 
     if current_scene == .SPLASH {
+        /*
         Simp.set_render_target(window);
         Simp.clear_render_target(pal[0].x, pal[0].y, pal[0].z, pal[0].w);
 
         Simp.set_shader_for_images(*logo);
 
         Simp.immediate_begin();
-
+        */
         if current_scene == {
             case .SPLASH; scene_splash_render();
         }
-
+        /*
         Simp.immediate_flush();
+        */
     }
     else {
+        /*
         Simp.set_render_target(window);
         Simp.clear_render_target(border_color.x, border_color.y, border_color.z, border_color.w);
 
@@ -270,6 +291,7 @@ render :: () {
         Simp.set_shader_for_images(*arts);
 
         Simp.immediate_begin();
+        */
 
         if current_scene == {
             case .GAME; scene_game_render();
@@ -279,14 +301,16 @@ render :: () {
         scene_fade();
 
         // Draw border, necessary for curvature effect
-        draw_sprite(.FADE_SOLID, .{0, 0, 1, game_height}, border_color);
-        draw_sprite(.FADE_SOLID, .{game_width - 1, 0, 1, game_height}, border_color);
-        draw_sprite(.FADE_SOLID, .{0, 0, game_width, 1}, border_color);
-        draw_sprite(.FADE_SOLID, .{0, game_height - 1, game_width, 1}, border_color);
+        draw_sprite(sprites[SpriteType.FADE_SOLID], .{0, 0, 1, xx game_height}, border_color);
+        draw_sprite(sprites[SpriteType.FADE_SOLID], .{xx (game_width - 1), 0, 1, xx game_height}, border_color);
+        draw_sprite(sprites[SpriteType.FADE_SOLID], .{0, 0, xx game_width, 1}, border_color);
+        draw_sprite(sprites[SpriteType.FADE_SOLID], .{0, xx (game_height - 1), xx game_width, 1}, border_color);
 
+        /*
         Simp.immediate_flush();
 
         Simp.set_render_target(window);
+        */
 
         // Calculate render width / height and offsets based on 16:9 aspect requirement
         render_width := window_width;
@@ -308,8 +332,9 @@ render :: () {
         }
 
         // Setup present
-        immediate_flush();
-        immediate_set_shader(*shader_present);
+        //immediate_flush();
+        //immediate_set_shader(*shader_present);
+        /*
         texture_size_loc := glGetUniformLocation(shader_present.gl_handle, "texture0Size");
         screen_native_size_loc := glGetUniformLocation(shader_present.gl_handle, "screenNativeSize");
 
@@ -317,22 +342,25 @@ render :: () {
         glUniform2f(screen_native_size_loc, xx render_width, xx render_height);
 
         set_projection();
-        immediate_set_texture(*pixel_surf);
+
+        draw_set_texture(pixel_surf);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
+*/
         // Draw present
+        /*
         Simp.immediate_begin();
         Simp.immediate_quad(Vector2.{xx x_offset, xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx (render_height + y_offset)}, Vector2.{xx (render_width + x_offset), xx y_offset}, Vector2.{xx x_offset, xx y_offset}, .{1, 1, 1, 1});
         Simp.immediate_flush();
+        */
     }
 }
 
 scene_fade :: () {
-    fade_color := Vector4.{0, 0, 0, 1};
+    fade_color := Colorf.{0, 0, 0, 1};
 
     t := ease_interp(.SINE_IN, 0.0, 1.0, scene_reveal);
 
@@ -341,11 +369,11 @@ scene_fade :: () {
     y_offset : int = 0;
 
     while y_offset < game_height {
-        draw_sprite(.FADE_IN_SLANT, .{xx (x_offset + x_stagger), xx y_offset}, fade_color);
-        draw_sprite(.FADE_SOLID, .{xx (x_offset + x_stagger + 16), xx y_offset, xx (game_width * 1.75), 16}, fade_color);
+        draw_sprite(sprites[SpriteType.FADE_IN_SLANT], .{xx (x_offset + x_stagger), xx y_offset}, fade_color);
+        draw_sprite(sprites[SpriteType.FADE_SOLID], .{xx (x_offset + x_stagger + 16), xx y_offset, xx (game_width * 1.75), 16}, fade_color);
         y_offset += 16;
         x_offset += 16;
-    }    
+    }
 }
 
 update :: () {
@@ -387,14 +415,12 @@ update :: () {
 init :: () {
     game_width = 640;
     game_height = 360;
-    
-    pixel_surf = Simp.texture_create_render_target(game_width, game_height, .RGBA8, .Render_Target);
+
+    pixel_surf = asset_create_render_target(xx game_width, xx game_height);
 
     audio_init();
     gamepad_init();
 
-    init(sound_player, xx window, true, true);
-    
     assets_init();
     map_init();
 

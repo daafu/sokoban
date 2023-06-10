@@ -2,6 +2,8 @@
     #import "Windows_Resources";
 }
 
+#import,dir "../../gamedev_libs/pxl/v1/bindings/jai";
+
 #load "game.jai";
 #load "map.jai";
 #load "player.jai";
@@ -10,7 +12,6 @@
 #load "crate.jai";
 #load "input.jai";
 #load "assets.jai";
-#load "draw.jai";
 #load "ease.jai";
 #load "audio.jai";
 #load "gamepad.jai";

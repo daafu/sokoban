@@ -117,15 +117,15 @@ scene_title_render :: () {
     t = ease_interp(.BOUNCE_IN, 0.0, 1.0, (1 - t));
     offset = xx (t * (-110));
 
-    draw_copy(*sprite_title_text1, Vector2i.{12, xx (8 + offset)}, Vector4.{1, 1, 1, 1});
-    draw_copy(*sprite_title_text2, Vector2i.{48, xx (64 + offset)}, Vector4.{1, 1, 1, 1});
+    draw_sprite(sprite_title_text1, .{12, xx (8 + cast(int) offset)});
+    draw_sprite(sprite_title_text2, .{48, xx (64 + cast(int) offset)});
 
     // Art
     t = ease_range_map(reveal, 0, 0.4);
     t = ease_interp(.EXPO_IN, 0.0, 1.0, (1 - t));
     offset = xx (t * (-game_width));
 
-    draw_copy(*sprite_title_art, Vector2i.{xx (180 + offset), 18}, Vector4.{1, 1, 1, 1});
+    draw_sprite(sprite_title_art, .{xx (180 + cast(int) offset), 18});
 }
 
 scene_title_update :: () {
@@ -201,7 +201,7 @@ scene_title_update :: () {
                 case .CONTINUE;
                     game_set_scene(.GAME);
                     audio_play_sound(sound_select, true);
-                    
+
                 case .NEW_GAME;
                     map_load(0);
                     game_set_scene(.GAME);
@@ -218,7 +218,7 @@ scene_title_update :: () {
 
                 // Config
                 case .SFX_VOL;
-                    
+
                 case .MUSIC_VOL;
 
                 case .FULLSCREEN;
@@ -264,20 +264,20 @@ draw_menu :: (t: float) {
 
         if current_options[i].value_type == {
             case .NONE;
-                draw_text(*font_expire, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color, current_options[i].name);
+                draw_pixel_text(font_expire, current_options[i].name, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color);
 
             case .INTEGER;
-                draw_text(*font_expire, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color, current_options[i].name);
-                draw_copy(*sprite_slider_bar, .{xx (125 + offset + 100), xx (first_option_y + (i * option_spacing))}, pal[3]);
-                draw_copy(*sprite_slider_tag, .{xx (125 + offset + 103 + (current_options[i].value_int * 3)), xx (first_option_y + (i * option_spacing))}, pal[7]);
+                draw_pixel_text(font_expire, current_options[i].name, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color);
+                draw_sprite(sprite_slider_bar, .{xx (125 + offset + 100), xx (first_option_y + (i * option_spacing))}, pal[3]);
+                draw_sprite(sprite_slider_tag, .{xx (125 + offset + 103 + (current_options[i].value_int * 3)), xx (first_option_y + (i * option_spacing))}, pal[7]);
 
             case .BOOL;
-                draw_text(*font_expire, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color, current_options[i].name);
+                draw_pixel_text(font_expire, current_options[i].name, .{xx (125 + offset), xx (first_option_y + (i * option_spacing))}, color);
                 if (current_options[i].value_int > 0) {
-                    draw_copy(*sprite_checkbox_on, .{xx (125 + offset + 100), xx (first_option_y + (i * option_spacing))}, pal[7]);
+                    draw_sprite(sprite_checkbox_on, .{xx (125 + offset + 100), xx (first_option_y + (i * option_spacing))}, pal[7]);
                 }
                 else {
-                    draw_copy(*sprite_checkbox_off, .{xx (125 + offset + 100), xx (first_option_y + (i * option_spacing))}, pal[3]);
+                    draw_sprite(sprite_checkbox_off, .{xx (125 + offset + 100), xx (first_option_y + (i * option_spacing))}, pal[3]);
                 }
         }
     }

@@ -1,7 +1,7 @@
 #import "Basic"; //()(MEMORY_DEBUGGER=true);
 
 Crate :: struct {
-    #as using base: Entity; 
+    #as using base: Entity;
     base.type = .CRATE;
     base.spr = .CRATE;
     base.color = 5;
@@ -14,5 +14,5 @@ crate_draw :: (e: Entity, yoffset: int) {
         color = pal[6];
     }
 
-    draw_sprite(e.spr, .{xx (e.vx * CELL_WIDTH + 0.5), xx ((e.vy * CELL_HEIGHT + 0.5) + yoffset)}, color);
+    draw_sprite(sprites[e.spr], .{xx (e.vx * CELL_WIDTH + 0.5), xx ((e.vy * CELL_HEIGHT + 0.5) + yoffset)}, color);
 }
