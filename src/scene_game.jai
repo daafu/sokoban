@@ -30,7 +30,7 @@ scene_game_render :: () {
 scene_game_update :: () {
     map_update();
 
-    if input_button_pressed(.ESCAPE) {
+    if input_keycode_pressed(.escape) {
         game_set_scene(.TITLE);
     }
 }

@@ -75,12 +75,9 @@ map_draw :: () {
     if reveal > 0.75 {
         t := (reveal - 0.75) / 0.25;
         draw_pixel_text(font_expire, tprint("Level %", (current_level + 1)), .{xx (game_width / 2 - 24), xx (game_height - (20 * ease_interp(.BACK_OUT, 0.0, 1.0, t) - 8))}, pal[3]);
-
-        draw_pixel_text(font_expire, tprint("pxl_get_platform returns %\n", pxl_get_platform()), .{xx (game_width / 2 - 24), xx (game_height - (20 * ease_interp(.BACK_OUT, 0.0, 1.0, t) - 8) - 20)}, pal[3]);
     }
 
-
-    //camera_set((game_width / 2) - (map_width * CELL_WIDTH) / 2, (game_height / 2) - (map_height * CELL_HEIGHT) / 2);
+    draw_pan(.{xx ((game_width / 2) - (map_width * CELL_WIDTH) / 2), xx ((game_height / 2) - (map_height * CELL_HEIGHT) / 2)});
 
     i := 0;
     xoffset := 0;
@@ -144,7 +141,7 @@ map_draw :: () {
         }
     }
 
-    //camera_reset();
+    draw_pan_reset();
 }
 
 map_load :: (level: int) {
@@ -357,7 +354,7 @@ map_update :: () {
     reveal_speed := 0.55;
 
     if resetting {
-        reveal -= reveal_speed * time_delta;
+        reveal -= reveal_speed * time_per_update();
         if reveal < 0 {
             resetting = false;
             reveal = 0;
@@ -402,7 +399,7 @@ map_update :: () {
             map_tiles[i].flags = xx TileFlag.BLOCKING;
         }
 
-        reveal += reveal_speed * time_delta;
+        reveal += reveal_speed * time_per_update();
         if reveal > 1 then reveal = 1;
     }
     else {
@@ -423,10 +420,10 @@ map_update :: () {
 
             trans_next_level = true;
 
-            trans_next_level_timeout -= time_delta;
+            trans_next_level_timeout -= time_per_update();
 
             if trans_next_level_timeout <= 0 {
-                reveal -= reveal_speed * time_delta;
+                reveal -= reveal_speed * time_per_update();
                 if reveal < 0 {
                     reveal = 0;
                     current_level += 1;

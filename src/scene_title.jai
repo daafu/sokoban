@@ -129,15 +129,15 @@ scene_title_render :: () {
 }
 
 scene_title_update :: () {
-    reveal += time_delta * 0.65;
+    reveal += time_per_update() * 0.65;
     if reveal > 1 reveal = 1;
 
     if reveal >= 1 && next_options.count == 0 {
-        options_reveal += time_delta * 1.25;
+        options_reveal += time_per_update() * 1.25;
         if options_reveal > 1 options_reveal = 1;
     }
     else {
-        options_reveal -= time_delta * 1.75;
+        options_reveal -= time_per_update() * 1.75;
         if options_reveal < 0 {
             options_reveal = 0;
             if next_options.count != 0 {
@@ -149,14 +149,14 @@ scene_title_update :: () {
     }
 
     hand_pos_dest : float = xx (first_option_y + (current_option * option_spacing));
-    hand_pos = xx lerp(hand_pos, hand_pos_dest, (time_delta * 40));
+    hand_pos = xx lerp(hand_pos, hand_pos_dest, (time_per_update() * 40));
 
     prev_option := current_option;
 
     // Don't process any input if transitioning
     if reveal < 0.8 || options_reveal < 0.6 then return;
 
-    if input_button_pressed(.UP) {
+    if input_keycode_pressed(.up) || input_keycode_pressed(.w) {
         current_option -= 1;
         while (current_option < 0 || !current_options[current_option].enabled) {
             current_option -= 1;
@@ -166,7 +166,7 @@ scene_title_update :: () {
         }
     }
 
-    if input_button_pressed(.DOWN) {
+    if input_keycode_pressed(.down) || input_keycode_pressed(.s) {
         current_option += 1;
         while (current_option >= current_options.count || !current_options[current_option].enabled) {
             current_option += 1;
@@ -177,13 +177,13 @@ scene_title_update :: () {
     }
 
     if current_options[current_option].value_type == .INTEGER {
-        if input_button_pressed(.LEFT) {
+        if input_keycode_pressed(.left) || input_keycode_pressed(.a) {
             if current_options[current_option].value_int > current_options[current_option].value_int_min {
                 current_options[current_option].value_int -= 1;
                 audio_play_sound(sound_select, true);
             }
         }
-        else if input_button_pressed(.RIGHT) {
+        else if input_keycode_pressed(.right) || input_keycode_pressed(.d) {
             if current_options[current_option].value_int < current_options[current_option].value_int_max {
                 current_options[current_option].value_int += 1;
                 audio_play_sound(sound_select, true);
@@ -194,7 +194,7 @@ scene_title_update :: () {
     if current_option < 0 current_option = 0;
     if current_option >= current_options.count current_option = current_options.count - 1;
 
-    if input_button_pressed(.SELECT) {
+    if input_keycode_pressed(.space) || input_keycode_pressed(.enter) {
         if current_options[current_option].enabled {
             if current_options[current_option].type == {
                 // Main
@@ -242,7 +242,7 @@ scene_title_update :: () {
     }
 
     // Back out of options using cancel button
-    if input_button_pressed(.CANCEL) && current_options.data == options_config.data {
+    if input_keycode_pressed(.escape) && current_options.data == options_config.data {
         game_save();
         audio_play_sound(sound_cancel, true);
         next_options = options_main;
@@ -284,7 +284,7 @@ draw_menu :: (t: float) {
 
     pointer_offset : float = xx (sin(get_time() * 10) * 4);
 
-    draw_sprite(sprite_get_index(.UI_HAND), .{xx (105 + offset + pointer_offset), xx (hand_pos - 2)}, pal[7]);
+    draw_sprite(sprite_get_index(.UI_HAND), .{xx (105 + offset + cast(int) pointer_offset), xx (hand_pos - 2)}, pal[7]);
 }
 
 set_first_valid_option :: () {

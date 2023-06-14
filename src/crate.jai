@@ -14,5 +14,5 @@ crate_draw :: (e: Entity, yoffset: int) {
         color = pal[6];
     }
 
-    draw_sprite(sprites[e.spr], .{xx (e.vx * CELL_WIDTH + 0.5), xx ((e.vy * CELL_HEIGHT + 0.5) + yoffset)}, color);
+    draw_sprite(sprites[e.spr], .{xx cast(int)(e.vx * CELL_WIDTH + 0.5), xx cast(int)((e.vy * CELL_HEIGHT + 0.5) + yoffset)}, color);
 }

@@ -10,7 +10,6 @@
 #load "levels.jai";
 #load "entity.jai";
 #load "crate.jai";
-#load "input.jai";
 #load "assets.jai";
 #load "ease.jai";
 #load "audio.jai";

@@ -1,5 +1,4 @@
 #import "Basic"; //()(MEMORY_DEBUGGER=true);
-#import "Simp";
 #import "GL";
 
 CELL_WIDTH :: 16;
@@ -72,10 +71,9 @@ sprite_checkbox_on : PackedSprite;
 sprite_help1 : PackedSprite;
 sprite_help2 : PackedSprite;
 
-sprite_logo : Rect;
+sprite_logo : Rectf;
 
 font_expire : *Asset;
-
 
 sound_step : *Mixer_Sound_Data;
 sound_push : *Mixer_Sound_Data;
@@ -101,9 +99,13 @@ set_sprite :: (type : SpriteType, name: string) {
 }
 
 assets_init :: () {
-    logo = asset_load("images/logo_trans.png");
-    sprite_pack = asset_load("spritepack/spritepack.sp");
+    asset_add_pack("res/res.pak");
 
+    logo = asset_load("images/logo_trans.png");
+    sprite_pack = asset_load("spritepack.sp");
+}
+
+assets_ready :: () {
     set_sprite(.WALL, "wall_top.png");
     set_sprite(.WALL_EDGE, "wall_side.png");
     set_sprite(.GROUND, "ground.png");
@@ -163,7 +165,7 @@ assets_init :: () {
     sprite_fill_sides[0b1110] = asset_get_sprite(sprite_pack, "fill_side_14.png");
     sprite_fill_sides[0b1111] = asset_get_sprite(sprite_pack, "fill_side_15.png");
 
-    sprite_title_art = asset_get_sprite(sprite_pack, "ui_tilte_art.png");
+    sprite_title_art = asset_get_sprite(sprite_pack, "ui_title_art.png");
     sprite_title_text1 = asset_get_sprite(sprite_pack, "ui_title_0.png");
     sprite_title_text2 = asset_get_sprite(sprite_pack, "ui_title_1.png");
 
@@ -175,10 +177,9 @@ assets_init :: () {
     sprite_help1 = asset_get_sprite(sprite_pack, "help_rules.png");
     sprite_help2 = asset_get_sprite(sprite_pack, "help_reset.png");
 
-    sprite_logo = Rect.{0, 0, 1024, 1024};
+    sprite_logo = Rectf.{0, 0, 1024, 1024};
 
-    font_expire = null;
-    //set_font(*font_expire, #char "!", #char "z", .{0, 485}, 32, 9, 9, -1, 0, 6);
+    font_expire = asset_create_pixel_font(sprite_pack, "fonts/expire", "!\"@$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz", 0, 0, false);
 
     sound_step = audio_load("res/footstep.wav");
     sound_push = audio_load("res/push.wav");
@@ -192,169 +193,5 @@ assets_init :: () {
     sound_drawer_open = audio_load("res/drawer_open.wav");
     sound_drawer_snap = audio_load("res/drawer_snap.wav");
 
-//    shader_present.gl_handle   = get_shader_program(SHADER_PRESENT);
-//    shader_present.alpha_blend = false;
+    shader_present = asset_load("shaders/retro.fxo");
 }
-
-#scope_file
-
-// This function is extracted from Simp module which current doesn't expose shader compilation
-get_shader_program :: (shader_text: string) -> GLuint {
-    LOG_BUFFER_SIZE :: 512;
-
-    make_shader_object :: (shader: string, prefix: string, shader_type : GLenum) -> GLuint {
-        shader_object := glCreateShader(shader_type);
-
-        //shader_str := temp_c_string(shader);
-        shaders: [2] *u8;
-        lengths: [2] s32;
-
-        shaders[0] = prefix.data;
-        shaders[1] = shader.data;
-        lengths[0] = xx prefix.count;
-        lengths[1] = xx shader.count;
-
-        glShaderSource(shader_object, 2, shaders.data, lengths.data);
-
-        glCompileShader(shader_object);
-
-        success : GLint;
-        glGetShaderiv(shader_object, GL_COMPILE_STATUS, *success);
-
-        if !success then {
-            log_data: [LOG_BUFFER_SIZE] u8;
-            glGetShaderInfoLog(shader_object, log_data.count, null, log_data.data);
-            log("%", to_string(log_data.data), flags=.ERROR);
-            return 0;
-        }
-
-        return shader_object;
-    }
-
-    PREFIX_V :: #string END
-    #version 330 core
-    #define VERTEX_SHADER
-    #define OUT_IN out
-    END
-
-    PREFIX_F :: #string END
-    #version 330 core
-    #define FRAGMENT_SHADER
-    #define OUT_IN in
-    END
-
-    shader_v := make_shader_object(shader_text, PREFIX_V, GL_VERTEX_SHADER);
-    shader_f := make_shader_object(shader_text, PREFIX_F, GL_FRAGMENT_SHADER);
-    shader_p := glCreateProgram();
-
-    glAttachShader(shader_p, shader_v);
-    glAttachShader(shader_p, shader_f);
-    glLinkProgram(shader_p);
-
-    success : GLint = 0;
-    glGetProgramiv(shader_p, GL_LINK_STATUS, *success);
-
-    if !success then {
-        log_data: [LOG_BUFFER_SIZE] u8;
-        glGetProgramInfoLog(shader_p, log_data.count, null, log_data.data);
-        log("%", to_string(log_data.data), flags=.ERROR);
-        return 0;
-    }
-
-    glDeleteShader(shader_v);
-    glDeleteShader(shader_f);
-
-    return shader_p;
-}
-
-SHADER_PRESENT :: #string END
-OUT_IN vec2 TexCoords;
-OUT_IN vec4 iterated_color;
-
-#ifdef VERTEX_SHADER
-in vec4 vert_position;
-in vec4 vert_color;
-in vec2 vert_uv0;
-
-uniform mat4 projection;
-
-void main() {
-    TexCoords = vec2(vert_uv0.x, 1-vert_uv0.y);
-    gl_Position = projection * vec4(vert_position.xy, 0.0, 1.0);
-    iterated_color = vert_color;
-}
-#endif // VERTEX_SHADER
-
-#ifdef FRAGMENT_SHADER
-out vec4 out_color;
-
-uniform sampler2D diffuse_texture;
-uniform highp vec2 texture0Size;
-uniform highp vec2 screenNativeSize;
-
-void main () {
-    vec2 uv = TexCoords;
-
-    float sampleFactor = 1.0f / ((screenNativeSize.x / texture0Size.x) * 2.5f);
-    float chromaticAberration = (screenNativeSize.x / 1500000.0) / (screenNativeSize.x / 1280.0);
-    chromaticAberration = chromaticAberration * 0.5;
-
-    /* Wrap UV */
-    float warp_amount = 0.15;
-    vec2 delta = uv - 0.5;
-    float delta2 = dot(delta.xy, delta.xy);
-    float delta4 = delta2 * delta2;
-    float delta_offset = delta4 * warp_amount;
-
-    uv = uv + delta * delta_offset;
-
-    /* Here we sample neighbouring pixels to get some pixel smoothing when display size
-    doesn't divide evenly into the native window resolution. */
-    vec2 pixelSize = vec2(1.0 / texture0Size.x, 1.0 / texture0Size.y);
-    pixelSize *= sampleFactor;
-
-    mediump vec4 leftColor;
-    leftColor.r = texture2D(diffuse_texture, vec2(uv.x - pixelSize.x, uv.y) + chromaticAberration).r;
-    leftColor.ga = texture2D(diffuse_texture, vec2(uv.x - pixelSize.x, uv.y)).ga;
-    leftColor.b = texture2D(diffuse_texture, vec2(uv.x - pixelSize.x, uv.y) - chromaticAberration).b;
-
-    mediump vec4 rightColor;
-    rightColor.r = texture2D(diffuse_texture, vec2(uv.x + pixelSize.x, uv.y) + chromaticAberration).r;
-    rightColor.ga = texture2D(diffuse_texture, vec2(uv.x + pixelSize.x, uv.y)).ga;
-    rightColor.b = texture2D(diffuse_texture, vec2(uv.x + pixelSize.x, uv.y) - chromaticAberration).b;
-
-    mediump vec4 topColor;
-    topColor.r = texture2D(diffuse_texture, vec2(uv.x, uv.y + pixelSize.y) + chromaticAberration).r;
-    topColor.ga = texture2D(diffuse_texture, vec2(uv.x, uv.y + pixelSize.y)).ga;
-    topColor.b = texture2D(diffuse_texture, vec2(uv.x, uv.y + pixelSize.y) - chromaticAberration).b;
-
-    mediump vec4 bottomColor;
-    bottomColor.r = texture2D(diffuse_texture, vec2(uv.x, uv.y - pixelSize.y) + chromaticAberration).r;
-    bottomColor.ga = texture2D(diffuse_texture, vec2(uv.x, uv.y - pixelSize.y)).ga;
-    bottomColor.b = texture2D(diffuse_texture, vec2(uv.x, uv.y - pixelSize.y) - chromaticAberration).b;
-
-    vec4 texelColor = (leftColor + rightColor + topColor + bottomColor) / 4.0;
-
-    vec4 color = texelColor * iterated_color;
-
-    // Saturate
-    float saturation = 0.15;
-    vec4 scaledColor = color * vec4(0.3, 0.59, 0.11, 1);
-    float luminance = scaledColor.r + scaledColor.g + scaledColor.b;
-    vec4 desatColor = vec4(luminance, luminance, luminance, 1);
-    color = mix(color, desatColor, -saturation);
-
-    // Scanline
-    float pixelLuminance = (color.r * 0.6) + (color.g * 0.3) + (color.b * 0.1) * 0.75;
-    float scanWave = (sin((uv.y * texture0Size.y * 2.0) * 3.14159265) + 1.0) / 2.0;
-    scanWave = (scanWave * scanWave);
-
-    float scanlineIntensity = 0.5;
-    float scanFade = 1.0 - ((scanWave) * scanlineIntensity * (1.0 - pixelLuminance));
-
-    color *= scanFade;
-
-    out_color = color;
-}
-#endif // FRAGMENT_SHADER
-END

@@ -15,12 +15,14 @@ initialized := false;
 
 audio_init :: () {
     sound_player = New(Sound_Player);
-    sound_player.update_history = true;    
+    sound_player.update_history = true;
 
     initialized := true;
 }
 
 audio_update :: () {
+    return; // TODO REMOVE ALL THIS AUDIO STUFF
+/*
     //
     // Move sound streams forward by dt.
     //
@@ -40,7 +42,8 @@ audio_update :: () {
         music_stream.user_volume_scale = music_base_volume * options_get_music_volume();
     }
 
-    post_entity_update(sound_player, time_delta);
+    post_entity_update(sound_player, time_per_update());
+    */
 }
 
 audio_play_music :: (name: string, volume: float) {
@@ -81,7 +84,7 @@ audio_play_sound :: (data: *Mixer_Sound_Data, perturb: bool = true) -> *Sound_St
     stream.user_volume_scale *= options_get_sfx_volume();
 
     stream.repeat_end_position = cast(int)(cast(float)(data.nsamples_times_nchannels / data.nchannels));
-    
+
     return stream;
 }
 
@@ -119,7 +122,7 @@ audio_load :: (name : string) -> *Mixer_Sound_Data {
             data.nBlockAlign      = format.nBlockAlign;
 
             data.nchannels = cast(u16) format.nChannels;
-            // The value in the FACT chunk is number of samples by time. 
+            // The value in the FACT chunk is number of samples by time.
             data.nsamples_times_nchannels = extra.wSamplesAccordingToFactChunk * data.nchannels;
         } else {
             assert(false);
