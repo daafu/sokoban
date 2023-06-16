@@ -19,7 +19,8 @@ scene_splash_enter :: () {
 }
 
 scene_splash_exit :: () {
-    //audio_play_music("res/music_build.ogg", 0.5);
+    audio_ref := audio_play(sound_music, AUDIO_MUSIC, true, 10);
+    audio_set_volume(*audio_ref, 0.5);
 }
 
 scene_splash_render :: () {

@@ -51,11 +51,11 @@ gamepad_check_connected :: () {
 
     if gamepad != prev_gamepad {
         if gamepad == null {
-            audio_play_sound(sound_cancel, true);
+            audio_play(sound_cancel, AUDIO_SFX, false, 9);
             print("gamepad disconnected\n");
         }
         else {
-            audio_play_sound(sound_select, true);
+            audio_play(sound_select, AUDIO_SFX, false, 9);
             print("gamepad connected\n");
         }
     }

@@ -4,6 +4,9 @@
 CELL_WIDTH :: 16;
 CELL_HEIGHT :: 16;
 
+AUDIO_SFX :: 0;
+AUDIO_MUSIC :: 1;
+
 // https://lospec.com/palette-list/purplemorning8
 pal : [8] Colorf : Colorf.[
     Colorf.{12 / 255.0, 7 / 255.0, 40 / 255.0, 1},         // 0
@@ -21,7 +24,8 @@ SpriteType :: enum u8 {
     WALL;
     WALL_EDGE;
     GROUND;
-    PLAYER;
+    PLAYER0;
+    PLAYER1;
     CRATE;
     CRATE_SLOT;
     DOOR_CLOSED;
@@ -75,21 +79,23 @@ sprite_logo : Rectf;
 
 font_expire : *Asset;
 
-sound_step : *Mixer_Sound_Data;
-sound_push : *Mixer_Sound_Data;
-sound_option : *Mixer_Sound_Data;
-sound_select : *Mixer_Sound_Data;
-sound_cancel : *Mixer_Sound_Data;
-sound_door_open : *Mixer_Sound_Data;
-sound_door_close : *Mixer_Sound_Data;
-sound_win : *Mixer_Sound_Data;
-sound_scene_swish : *Mixer_Sound_Data;
-sound_drawer_open : *Mixer_Sound_Data;
-sound_drawer_snap : *Mixer_Sound_Data;
+sound_step : *Asset;
+sound_push : *Asset;
+sound_option : *Asset;
+sound_select : *Asset;
+sound_cancel : *Asset;
+sound_door_open : *Asset;
+sound_door_close : *Asset;
+sound_win : *Asset;
+sound_scene_swish : *Asset;
+sound_drawer_open : *Asset;
+sound_drawer_snap : *Asset;
+
+sound_music : *Asset;
 
 shader_present : *Asset;
 
-sprite_get_index :: (spr :SpriteType) -> PackedSprite {
+sprite_get_packedsprite :: (spr :SpriteType) -> PackedSprite {
     si : PackedSprite = sprites[cast (int) spr];
     return si;
 }
@@ -103,13 +109,31 @@ assets_init :: () {
 
     logo = asset_load("images/logo_trans.png");
     sprite_pack = asset_load("spritepack.sp");
+
+
+    sound_step = asset_load("sounds/footstep.wav");
+    sound_push = asset_load("sounds/push.wav");
+    sound_option = asset_load("sounds/option.wav");
+    sound_select = asset_load("sounds/select.wav");
+    sound_cancel = asset_load("sounds/cancel.wav");
+    sound_door_open = asset_load("sounds/door_open.wav");
+    sound_door_close = asset_load("sounds/door_close.wav");
+    sound_win = asset_load("sounds/level_done.wav");
+    sound_scene_swish = asset_load("sounds/swish.wav");
+    sound_drawer_open = asset_load("sounds/drawer_open.wav");
+    sound_drawer_snap = asset_load("sounds/drawer_snap.wav");
+
+    sound_music = asset_load("sounds/music_build.ogg");
+
+    shader_present = asset_load("shaders/retro.fxo");
 }
 
 assets_ready :: () {
     set_sprite(.WALL, "wall_top.png");
     set_sprite(.WALL_EDGE, "wall_side.png");
     set_sprite(.GROUND, "ground.png");
-    set_sprite(.PLAYER, "player_0.png");
+    set_sprite(.PLAYER0, "player_0.png");
+    set_sprite(.PLAYER1, "player_1.png");
     set_sprite(.CRATE, "crate.png");
     set_sprite(.CRATE_SLOT, "crate_slot.png");
     set_sprite(.DOOR_CLOSED, "door_closed.png");
@@ -180,18 +204,4 @@ assets_ready :: () {
     sprite_logo = Rectf.{0, 0, 1024, 1024};
 
     font_expire = asset_create_pixel_font(sprite_pack, "fonts/expire", "!\"@$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz", 0, 0, false);
-
-    sound_step = audio_load("res/footstep.wav");
-    sound_push = audio_load("res/push.wav");
-    sound_option = audio_load("res/option.wav");
-    sound_select = audio_load("res/select.wav");
-    sound_cancel = audio_load("res/cancel.wav");
-    sound_door_open = audio_load("res/door_open.wav");
-    sound_door_close = audio_load("res/door_close.wav");
-    sound_win = audio_load("res/level_done.wav");
-    sound_scene_swish = audio_load("res/swish.wav");
-    sound_drawer_open = audio_load("res/drawer_open.wav");
-    sound_drawer_snap = audio_load("res/drawer_snap.wav");
-
-    shader_present = asset_load("shaders/retro.fxo");
 }

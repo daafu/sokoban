@@ -11,8 +11,8 @@
 #load "entity.jai";
 #load "crate.jai";
 #load "assets.jai";
+#load "input.jai";
 #load "ease.jai";
-#load "audio.jai";
 #load "gamepad.jai";
 #load "scene_game.jai";
 #load "scene_title.jai";

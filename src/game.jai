@@ -69,7 +69,7 @@ SAVE_VERSION : u32 : 1;
 
 game_set_scene :: (scene: SceneType) {
     if scene != .SPLASH && current_scene != .SPLASH {
-        audio_play_sound(sound_scene_swish, true);
+        audio_play(sound_scene_swish, AUDIO_SFX, false, 10);
     }
 
     if current_scene == {
@@ -89,12 +89,12 @@ game_set_scene :: (scene: SceneType) {
 }
 
 game_quit :: () {
-    should_quit_game = true;
+    pxl_quit();
 }
 
 game_toggle_fullscreen :: (fullscreen: bool) {
     window_set_fullscreen(.windowed);
-    /*
+/*
     if fullscreen {
         window_set_fullscreen(.fullscreen_borderless);
     }
@@ -163,8 +163,6 @@ init :: () -> Result #c_call {
 
         init();
         game_set_scene(.SPLASH);
-
-        audio_update();
     }
 
     return .success;
@@ -237,6 +235,7 @@ render :: () {
         draw_rect(.{0, 0, xx game_width, xx game_height}, 1, border_color);
 
         draw_set_render_target(null);
+        draw_camera(0, 0, xx window_width, xx window_height);
 
         draw_set_texture(pixel_surf);
         draw_set_shader(shader_present);
@@ -291,7 +290,7 @@ update :: () {
             next_scene = .NONE;
 
             if current_scene != .SPLASH {
-                audio_play_sound(sound_scene_swish, true);
+                audio_play(sound_scene_swish, AUDIO_SFX, false, 10);
             }
 
             if current_scene == {
@@ -306,6 +305,15 @@ update :: () {
         scene_reveal += time_per_update() * fade_speed;
         if scene_reveal > 1 scene_reveal = 1;
     }
+
+    // Update volume if needed
+    sfx_volume := options_get_sfx_volume();
+    music_volume := options_get_music_volume();
+
+    audio_set_domain_volume(sfx_volume, AUDIO_SFX);
+    audio_set_domain_volume(music_volume, AUDIO_MUSIC);
+
+    input_check_gamepad();
 }
 
 init :: () {
@@ -315,8 +323,8 @@ init :: () {
     pixel_surf = asset_create_render_target(xx game_width, xx game_height);
     asset_set_texture_interpolation(pixel_surf, .nearest);
 
-    audio_init();
     gamepad_init();
+    input_simulate_dpad_with_analog(.simulate_4way);
 
     assets_init();
     map_init();

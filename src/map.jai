@@ -343,8 +343,8 @@ map_move_entity :: (e: *Entity, dx: int, dy: int) -> bool {
     e.y = ny;
 
     if e.type == {
-        case .PLAYER; audio_play_sound(sound_step, true);
-        case .CRATE; audio_play_sound(sound_push, true);
+        case .PLAYER; audio_play(sound_step, AUDIO_SFX, false, 0);
+        case .CRATE; audio_play(sound_step, AUDIO_SFX, false, 5);
     }
 
     return true;
@@ -362,7 +362,7 @@ map_update :: () {
         }
 
         if prev_reveal > 0.5 && reveal <= 0.5 {
-            audio_play_sound(sound_drawer_open, true);
+            audio_play(sound_step, AUDIO_SFX, false, 9);
         }
 
         prev_reveal = reveal;
@@ -381,7 +381,7 @@ map_update :: () {
     }
 
     if prev_reveal < 0.35 && reveal >= 0.35 {
-        audio_play_sound(sound_drawer_snap, true);
+        audio_play(sound_drawer_snap, AUDIO_SFX, false, 9);
     }
 
     prev_reveal = reveal;
@@ -392,7 +392,7 @@ map_update :: () {
         if door_pos.x != -1 {
             i := door_pos.x + door_pos.y * map_width;
             if map_tiles[i].spr == .DOOR_OPEN {
-                audio_play_sound(sound_door_close, true);
+                audio_play(sound_door_close, AUDIO_SFX, false, 9);
             }
 
             map_tiles[i].spr = .DOOR_CLOSED;
@@ -406,7 +406,7 @@ map_update :: () {
         if door_pos.x != -1 {
             i := door_pos.x + door_pos.y * map_width;
             if map_tiles[i].spr == .DOOR_CLOSED {
-                audio_play_sound(sound_door_open, true);
+                audio_play(sound_door_open, AUDIO_SFX, false, 9);
             }
 
             map_tiles[i].spr = .DOOR_OPEN;
@@ -415,7 +415,7 @@ map_update :: () {
 
         if player.x == door_pos.x && player.y == door_pos.y {
             if trans_next_level == false {
-                audio_play_sound(sound_win, true);
+                audio_play(sound_win, AUDIO_SFX, false, 9);
             }
 
             trans_next_level = true;
@@ -433,7 +433,7 @@ map_update :: () {
                 }
 
                 if prev_reveal > 0.5 && reveal <= 0.5 {
-                    audio_play_sound(sound_drawer_open, true);
+                    audio_play(sound_drawer_open, AUDIO_SFX, false, 9);
                 }
 
                 prev_reveal = reveal;

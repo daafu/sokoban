@@ -19,6 +19,7 @@ Entity :: struct {
     vx : float;
     vy : float;
     spr : SpriteType;
+    spr2 : SpriteType;
     color : u8 = 7;
     flags : u8 = 0;
 }

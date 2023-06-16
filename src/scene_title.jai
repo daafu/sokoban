@@ -156,7 +156,7 @@ scene_title_update :: () {
     // Don't process any input if transitioning
     if reveal < 0.8 || options_reveal < 0.6 then return;
 
-    if input_keycode_pressed(.up) || input_keycode_pressed(.w) {
+    if input_button_pressed(.UP) {
         current_option -= 1;
         while (current_option < 0 || !current_options[current_option].enabled) {
             current_option -= 1;
@@ -166,7 +166,7 @@ scene_title_update :: () {
         }
     }
 
-    if input_keycode_pressed(.down) || input_keycode_pressed(.s) {
+    if input_button_pressed(.DOWN) {
         current_option += 1;
         while (current_option >= current_options.count || !current_options[current_option].enabled) {
             current_option += 1;
@@ -177,16 +177,16 @@ scene_title_update :: () {
     }
 
     if current_options[current_option].value_type == .INTEGER {
-        if input_keycode_pressed(.left) || input_keycode_pressed(.a) {
+        if input_button_pressed(.LEFT) {
             if current_options[current_option].value_int > current_options[current_option].value_int_min {
                 current_options[current_option].value_int -= 1;
-                audio_play_sound(sound_select, true);
+                audio_play(sound_select, AUDIO_SFX, false, 5);
             }
         }
-        else if input_keycode_pressed(.right) || input_keycode_pressed(.d) {
+        else if input_button_pressed(.RIGHT) {
             if current_options[current_option].value_int < current_options[current_option].value_int_max {
                 current_options[current_option].value_int += 1;
-                audio_play_sound(sound_select, true);
+                audio_play(sound_select, AUDIO_SFX, false, 5);
             }
         }
     }
@@ -194,27 +194,27 @@ scene_title_update :: () {
     if current_option < 0 current_option = 0;
     if current_option >= current_options.count current_option = current_options.count - 1;
 
-    if input_keycode_pressed(.space) || input_keycode_pressed(.enter) {
+    if input_button_pressed(.SELECT) {
         if current_options[current_option].enabled {
             if current_options[current_option].type == {
                 // Main
                 case .CONTINUE;
                     game_set_scene(.GAME);
-                    audio_play_sound(sound_select, true);
+                    audio_play(sound_select, AUDIO_SFX, false, 5);
 
                 case .NEW_GAME;
                     map_load(0);
                     game_set_scene(.GAME);
-                    audio_play_sound(sound_select, true);
+                    audio_play(sound_select, AUDIO_SFX, false, 5);
 
                 case .OPTIONS;
                     next_options = options_config;
-                    audio_play_sound(sound_select, true);
+                    audio_play(sound_select, AUDIO_SFX, false, 5);
 
                 case .QUIT;
                     game_save();
                     game_set_scene(.QUIT);
-                    audio_play_sound(sound_cancel, true);
+                    audio_play(sound_cancel, AUDIO_SFX, false, 5);
 
                 // Config
                 case .SFX_VOL;
@@ -231,25 +231,25 @@ scene_title_update :: () {
 
                     game_toggle_fullscreen(options_get_fullscreen());
 
-                    audio_play_sound(sound_select, true);
+                    audio_play(sound_select, AUDIO_SFX, false, 5);
 
                 case .BACK;
                     game_save();
                     next_options = options_main;
-                    audio_play_sound(sound_cancel, true);
+                    audio_play(sound_cancel, AUDIO_SFX, false, 5);
             }
         }
     }
 
     // Back out of options using cancel button
-    if input_keycode_pressed(.escape) && current_options.data == options_config.data {
+    if input_button_pressed(.CANCEL) && current_options.data == options_config.data {
         game_save();
-        audio_play_sound(sound_cancel, true);
+        audio_play(sound_cancel, AUDIO_SFX, false, 5);
         next_options = options_main;
     }
 
     if prev_option != current_option {
-        audio_play_sound(sound_option, true);
+        audio_play(sound_option, AUDIO_SFX, false, 5);
     }
 }
 
@@ -284,7 +284,7 @@ draw_menu :: (t: float) {
 
     pointer_offset : float = xx (sin(get_time() * 10) * 4);
 
-    draw_sprite(sprite_get_index(.UI_HAND), .{xx (105 + offset + cast(int) pointer_offset), xx (hand_pos - 2)}, pal[7]);
+    draw_sprite(sprite_get_packedsprite(.UI_HAND), .{xx (105 + offset + cast(int) pointer_offset), xx cast(int)(hand_pos + 1)}, pal[7]);
 }
 
 set_first_valid_option :: () {
