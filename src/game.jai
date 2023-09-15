@@ -55,8 +55,6 @@ window : Window_Type;
 
 pixel_surf : Simp.Texture;
 
-last_time : float64;
-
 should_quit_game : bool = false;
 
 current_scene : SceneType;
@@ -152,8 +150,6 @@ game_load :: () {
 }
 
 main :: () {
-    last_time = get_time();
-
     sdl_version : SDL_version;
     SDL_GetVersion(*sdl_version);
     print("Using SDL %.%.%\n", sdl_version.major, sdl_version.minor, sdl_version.patch);
